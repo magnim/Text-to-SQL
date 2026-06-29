@@ -1,0 +1,133 @@
+Module 0
+=====================================================
+Big Picture
+How Text-to-SQL works.
+-----------------------------------------------------
+-----------------------------------------------------
+Module 1
+=====================================================
+Language Processing
+Tokenizer
+Vocabulary
+Corpus
+BPE
+Special Tokens
+-----------------------------------------------------
+-----------------------------------------------------
+Module 2
+-----------------------------------------------------
+Representation
+Tensor
+Embedding
+Positional Encoding
+-----------------------------------------------------
+-----------------------------------------------------
+Module 3
+=====================================================
+Neural Networks
+Linear Layer
+Activation
+Loss
+Autograd
+Optimizer
+-----------------------------------------------------
+-----------------------------------------------------
+Module 4
+=====================================================
+Transformer
+Attention
+Encoder
+Decoder
+Masking
+-----------------------------------------------------
+-----------------------------------------------------
+Module 5
+=====================================================
+Text-to-SQL
+Schema Encoding
+Grammar
+Beam Search
+Execution
+-----------------------------------------------------
+-----------------------------------------------------
+Module 6
+=====================================================
+Training
+Synthetic Data
+Mini-batches
+Evaluation
+
+#################################################################
+#################################################################
+#################################################################
+Engineering Workflow
+1. What is the problem?
+
+2. Why do current solutions fail?
+
+3. What constraints do I have?
+
+4. If I were inventing a solution today,
+   what would I try?
+
+5. What edge cases could break my design?
+
+6. How did researchers actually solve it?
+
+7. Can I implement it?
+
+8. Can I improve it?
+#################################################################
+#################################################################
+#################################################################
+
+Problem:
+Need to tokenize stock symbols.
+
+Constraints:
+Need short sequences.
+Need to handle new symbols.
+
+Reasoning:
+Whole symbols reduce sequence length, but unseen symbols become a problem.
+
+Decision:
+I'd use whole symbols if the vocabulary is fixed.
+
+Confidence:
+70%
+
+#################################################################
+#################################################################
+#################################################################
+
+
+Knowledge Timeline
+
+[✓] Why AI needs representations
+        │
+[✓] Character Tokenization
+        │
+[✓] Word Tokenization
+        │
+[✓] Subword Tokenization
+        │
+[✓] Why BPE Exists
+        │
+[ ] Build BPE
+        │
+[ ] Vocabulary
+        │
+[ ] Token IDs
+        │
+[ ] Embeddings
+        │
+[ ] Positional Encoding
+        │
+[ ] Attention
+        │
+[ ] Transformer
+        │
+[ ] Training
+        │
+[ ] Text-to-SQL LLM

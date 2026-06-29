@@ -1,0 +1,40 @@
+text_to_sql_llm/
+│
+├── README.md
+├── requirements.txt
+├── run.py                # Temporary playground while learning
+│
+├── data/
+│   ├── raw/
+│   └── processed/
+│
+├── src/
+│   │
+│   ├── tokenizer/
+│   │   ├── __init__.py
+│   │   ├── bpe.py
+│   │   ├── vocabulary.py
+│   │   └── tokenizer.py
+│   │
+│   ├── embeddings/
+│   │   ├── embedding.py
+│   │   └── positional.py
+│   │
+│   ├── transformer/
+│   │   ├── attention.py
+│   │   ├── feedforward.py
+│   │   └── model.py
+│   │
+│   ├── training/
+│   │   ├── trainer.py
+│   │   └── dataset.py
+│   │
+│   ├── sql/
+│   │   └── parser.py
+│   │
+│   └── utils/
+│       └── helpers.py
+│
+└── tests/
+    ├── test_bpe.py
+    └── ...
