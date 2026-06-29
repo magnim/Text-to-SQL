@@ -4,17 +4,10 @@ words = ["low", "lower", "lowest", "low", "lower"]
 
 trainer = BPETrainer(words)
 
-print("Corpus:")
+print("Initial Corpus:")
 print(trainer.corpus)
 
-print("\nPair Counts:")
-print(trainer.count_pairs())
+trainer.train(3)
 
-best_pair = trainer.find_best_pair()
-print("\nBest pair:")
-print(best_pair)
-
-trainer.merge_pair(best_pair)
-
-print("\nAfter merge:")
+print("\nCorpus After 3 Merges:")
 print(trainer.corpus)

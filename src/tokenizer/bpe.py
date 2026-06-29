@@ -66,10 +66,8 @@ class BPETrainer:
             If there are no pairs, return None.
         """
         pair_counts = self.count_pairs()
-
         if not pair_counts:
             return None
-
         # Find and return the pair with the highest frequency.
         best_pair = None
         best_count = -1
@@ -115,3 +113,13 @@ class BPETrainer:
             new_corpus[new_token_tuple] += frequency
 
         self.corpus = new_corpus
+
+    def train(self, num_merges: int):
+        for _ in range(num_merges):
+            print('1')
+
+            best_pair = self.find_best_pair()
+            if best_pair is None:
+                break
+
+            self.merge_pair(best_pair)
