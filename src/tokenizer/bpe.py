@@ -97,17 +97,7 @@ class BPETrainer:
         # Store the new token tuple with the same frequency
 
         for tokens, frequency in self.corpus.items():
-            new_tokens = []
-            i = 0
-
-            while i < len(tokens):
-                if i<len(tokens)-1 and tokens[i] == pair_to_merge[0] and tokens[i + 1] == pair_to_merge[1]:
-                    merged_tokens = tokens[i] + tokens[i+1]
-                    new_tokens.append(merged_tokens)
-                    i += 2
-                else:
-                    new_tokens.append(tokens[i])
-                    i+=1
+            new_tokens = self._merge_tokens(tokens, pair_to_merge)
             new_token_tuple = tuple(new_tokens)
             if new_token_tuple not in new_corpus:
                 new_corpus[new_token_tuple] = 0
@@ -125,3 +115,47 @@ class BPETrainer:
 
             self.merge_rules.append(best_pair)
             self.merge_pair(best_pair)
+
+    def _merge_tokens(
+            self,
+            tokens: tuple[str, ...] | list[str],
+            pair_to_merge: tuple[str, str],
+    ) -> list[str]:
+        """
+        Merge a single adjacent pair inside one token sequence.
+
+        Example:
+            tokens = ("l", "o", "w")
+            pair_to_merge = ("l", "o")
+
+        Returns:
+            ["lo", "w"]
+        """
+        new_tokens = []
+        i = 0
+
+        while i < len(tokens):
+            if (
+                    i < len(tokens) - 1
+                    and tokens[i] == pair_to_merge[0]
+                    and tokens[i + 1] == pair_to_merge[1]
+            ):
+                merged_token = tokens[i] + tokens[i + 1]
+                new_tokens.append(merged_token)
+                i += 2
+            else:
+                new_tokens.append(tokens[i])
+                i += 1
+
+        return new_tokens
+
+    def encode(self, text: str) -> list[str]:
+        """
+        Encode new text using the learned BPE merge rules.
+        """
+        tokens = list(text)
+
+        for merge_rule in self.merge_rules:
+            tokens = self._merge_tokens(tokens, merge_rule)
+
+        return tokens
