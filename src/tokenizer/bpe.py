@@ -56,3 +56,26 @@ class BPETrainer:
                     pair_counts[pair] = 0
                 pair_counts[pair] += frequency
         return pair_counts
+
+    def find_best_pair(self) -> tuple[str, str] | None:
+        """
+        Find the most frequent adjacent token pair.
+
+        Returns:
+            The pair with the highest frequency.
+            If there are no pairs, return None.
+        """
+        pair_counts = self.count_pairs()
+
+        if not pair_counts:
+            return None
+
+        # Find and return the pair with the highest frequency.
+        best_pair = None
+        best_count = -1
+        for pair, count in pair_counts.items():
+            if count > best_count:
+                best_pair = pair
+                best_count = count
+
+        return best_pair
