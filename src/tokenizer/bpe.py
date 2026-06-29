@@ -12,6 +12,7 @@ class BPETrainer:
     def __init__(self, words: list[str]):
         self.words = words
         self.corpus = self._build_initial_corpus()
+        self.merge_rules: list[tuple[str, str]] = []
 
     def _build_initial_corpus(self) -> dict[tuple[str, ...], int]:
         """
@@ -122,4 +123,5 @@ class BPETrainer:
             if best_pair is None:
                 break
 
+            self.merge_rules.append(best_pair)
             self.merge_pair(best_pair)

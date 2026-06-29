@@ -11,3 +11,6 @@ trainer.train(3)
 
 print("\nCorpus After 3 Merges:")
 print(trainer.corpus)
+
+print("\nMerge Rules:")
+print(trainer.merge_rules)
