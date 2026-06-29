@@ -10,5 +10,11 @@ print(trainer.corpus)
 print("\nPair Counts:")
 print(trainer.count_pairs())
 
-print("\nBest Pair:")
-print(trainer.find_best_pair())
+best_pair = trainer.find_best_pair()
+print("\nBest pair:")
+print(best_pair)
+
+trainer.merge_pair(best_pair)
+
+print("\nAfter merge:")
+print(trainer.corpus)
