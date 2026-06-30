@@ -175,3 +175,16 @@ class BPETrainer:
 
             if merged_token not in self.vocab:
                 self.vocab[merged_token] = len(self.vocab)
+
+    def encode_ids(self, text: str) -> list[int]:
+        """
+        Encode text into vocabulary IDs.
+        """
+        tokens = self.encode(text)
+        ids = []
+        for token in tokens:
+            if token in self.vocab:
+                ids.append(self.vocab[token])
+            else:
+                ids.append(self.vocab["<UNK>"])
+        return ids

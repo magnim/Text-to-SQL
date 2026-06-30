@@ -17,3 +17,9 @@ print(trainer.merge_rules)
 
 
 print(trainer.vocab)
+
+print("Tokens:")
+print(trainer.encode("lowest"))
+
+print("\nToken IDs:")
+print(trainer.encode_ids("lowest"))
