@@ -16,8 +16,4 @@ print("\nMerge Rules:")
 print(trainer.merge_rules)
 
 
-print(trainer.encode("low"))
-print(trainer.encode("lower"))
-print(trainer.encode("lowest"))
-print(trainer.encode("lowering"))
-print(trainer.encode("yellow"))
+print(trainer.vocab)

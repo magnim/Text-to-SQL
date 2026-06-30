@@ -13,6 +13,7 @@ class BPETrainer:
         self.words = words
         self.corpus = self._build_initial_corpus()
         self.merge_rules: list[tuple[str, str]] = []
+        self.vocab: dict[str, int] = {}
 
     def _build_initial_corpus(self) -> dict[tuple[str, ...], int]:
         """
@@ -80,8 +81,8 @@ class BPETrainer:
         return best_pair
 
     def merge_pair(
-        self,
-        pair_to_merge: tuple[str, str],
+            self,
+            pair_to_merge: tuple[str, str],
     ) -> None:
         """
         Merge a selected adjacent pair everywhere in the corpus.
@@ -107,14 +108,13 @@ class BPETrainer:
 
     def train(self, num_merges: int):
         for _ in range(num_merges):
-            print('1')
-
             best_pair = self.find_best_pair()
             if best_pair is None:
                 break
 
             self.merge_rules.append(best_pair)
             self.merge_pair(best_pair)
+        self._build_vocab()
 
     def _merge_tokens(
             self,
@@ -159,3 +159,19 @@ class BPETrainer:
             tokens = self._merge_tokens(tokens, merge_rule)
 
         return tokens
+
+    def _build_vocab(self) -> None:
+        """
+        Build the vocabulary from the learned merge rules.
+        """
+        self.vocab ['<PAD>'] = 0
+        self.vocab ['<UNK>'] = 1
+        for word in self.words:
+            for char in word:
+                if char not in self.vocab:
+                    self.vocab[char] = len(self.vocab)
+        for left, right in self.merge_rules:
+            merged_token = left + right
+
+            if merged_token not in self.vocab:
+                self.vocab[merged_token] = len(self.vocab)
