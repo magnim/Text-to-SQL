@@ -33,3 +33,7 @@ embedding = Embedding(
 )
 
 print(embedding.embedding_matrix)
+print('#'*20)
+vectors = embedding.forward([0, 2, 4])
+
+print(vectors)

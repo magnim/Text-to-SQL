@@ -26,3 +26,14 @@ class Embedding:
             matrix.append(vector)
 
         return matrix
+
+    def forward(
+            self,
+            token_ids: list[int]
+    ) -> list[list[float]]:
+        embeddings  = []
+
+        for token_id in token_ids:
+            embeddings.append(self.embedding_matrix[token_id])
+
+        return embeddings
