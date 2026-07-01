@@ -23,3 +23,13 @@ print(trainer.encode("lowest"))
 
 print("\nToken IDs:")
 print(trainer.encode_ids("lowest"))
+
+from src.embeddings.embedding import Embedding
+
+
+embedding = Embedding(
+    vocab_size=5,
+    embedding_dim=3
+)
+
+print(embedding.embedding_matrix)
