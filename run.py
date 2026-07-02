@@ -1,4 +1,5 @@
 from src.tokenizer.bpe import BPETrainer
+from layers.linear import Linear
 
 words = ["low", "lower", "lowest", "low", "lower"]
 
@@ -37,3 +38,24 @@ print('#'*20)
 vectors = embedding.forward([0, 2, 4])
 
 print(vectors)
+
+
+linear = Linear(input_size=2)
+linear.weights = [3, 4]
+linear.bias = 10
+prediction = linear.forward([2, 5])
+
+print(prediction)
+
+
+
+linear.weights = [3, 4]
+linear.bias = 10
+
+print(linear.forward([0, 0]))
+
+
+linear.weights = [0.5, 0.2]
+linear.bias = 0.1
+
+print(linear.forward([2.0, 4.0]))
