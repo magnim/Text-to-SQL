@@ -1,5 +1,6 @@
 from src.tokenizer.bpe import BPETrainer
 from layers.linear import Linear
+from models.tiny_model import TinyModel
 
 words = ["low", "lower", "lowest", "low", "lower"]
 
@@ -59,3 +60,13 @@ linear.weights = [0.5, 0.2]
 linear.bias = 0.1
 
 print(linear.forward([2.0, 4.0]))
+
+
+model = TinyModel(
+    vocab_size=3,
+    embedding_dim=2
+)
+
+prediction = model.forward([0])
+
+print(prediction)
