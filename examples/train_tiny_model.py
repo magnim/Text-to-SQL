@@ -2,6 +2,7 @@ import random
 
 from models.tiny_model import TinyModel
 from losses.mse import MSE
+from training.trainer import Trainer
 
 random.seed(42)
 
@@ -20,15 +21,13 @@ training_data = [
 
 learning_rate = 0.01
 
-for epoch in range(20):
-    epoch_loss = 0.0
-    for token_ids, target in training_data:
-        prediction = model.forward(token_ids)
-        loss = loss_fn.forward(prediction=prediction,target=target)
-        gradient = loss_fn.backward(prediction=prediction,target=target)
-        model.linear.backward(gradient)
-        model.linear.update(learning_rate=learning_rate)
-        epoch_loss += loss
-    average_loss = epoch_loss / len(training_data)
+trainer = Trainer(
+    model=model,
+    loss_fn=loss_fn,
+    learning_rate=0.01
+)
 
-    print(f"Epoch {epoch + 1:2d} | "f"Average Loss: {average_loss:.6f}")
+trainer.train(
+    training_data=training_data,
+    epochs=20
+)
