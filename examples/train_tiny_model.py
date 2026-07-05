@@ -12,33 +12,23 @@ model = TinyModel(
 
 loss_fn = MSE()
 
-token_ids = [0]
-
-target = 1.0
+training_data = [
+    ([0], 1.0),
+    ([1], 0.0),
+    ([2], 0.5),
+]
 
 learning_rate = 0.01
 
-for epoch in range(150):
-    prediction = model.forward(token_ids)
+for epoch in range(20):
+    epoch_loss = 0.0
+    for token_ids, target in training_data:
+        prediction = model.forward(token_ids)
+        loss = loss_fn.forward(prediction=prediction,target=target)
+        gradient = loss_fn.backward(prediction=prediction,target=target)
+        model.linear.backward(gradient)
+        model.linear.update(learning_rate=learning_rate)
+        epoch_loss += loss
+    average_loss = epoch_loss / len(training_data)
 
-    loss = loss_fn.forward(
-        prediction=prediction,
-        target=target
-    )
-
-    gradient = loss_fn.backward(
-        prediction=prediction,
-        target=target
-    )
-
-    model.linear.backward(gradient)
-
-    model.linear.update(
-        learning_rate=learning_rate
-    )
-
-    print(
-        f"Epoch {epoch + 1} | "
-        f"Prediction: {prediction:.4f} | "
-        f"Loss: {loss:.4f}"
-    )
+    print(f"Epoch {epoch + 1:2d} | "f"Average Loss: {average_loss:.6f}")
