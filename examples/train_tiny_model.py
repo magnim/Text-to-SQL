@@ -1,5 +1,9 @@
+import random
+
 from models.tiny_model import TinyModel
 from losses.mse import MSE
+
+random.seed(42)
 
 model = TinyModel(
     vocab_size=5,
