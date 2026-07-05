@@ -29,3 +29,9 @@ class TinyModel:
 
         return prediction
 
+    def backward(self,gradient: float) -> None:
+        self.linear.backward(gradient)
+
+
+    def update(self,learning_rate: float):
+        self.linear.update(learning_rate)

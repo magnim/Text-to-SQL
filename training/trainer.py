@@ -12,8 +12,8 @@ class Trainer:
                 prediction = self.model.forward(token_ids)
                 loss = self.loss_fn.forward(prediction=prediction, target=target)
                 gradient = self.loss_fn.backward(prediction=prediction, target=target)
-                self.model.linear.backward(gradient)
-                self.model.linear.update(learning_rate=self.learning_rate)
+                self.model.backward(gradient)
+                self.model.update(learning_rate=self.learning_rate)
                 epoch_loss += loss
             average_loss = epoch_loss / len(training_data)
 
