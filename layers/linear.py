@@ -21,9 +21,33 @@ class Linear:
         return bias
 
     def forward(self,x: list[float]) -> float:
+        self.last_input = x
         if len(x) != self.input_size:
             raise ValueError(f"Expected {self.input_size} inputs, got {len(x)}.")
         output = 0.0
         for i in range(len(x)):
             output += self.weights[i] * x[i]
         return output+self.bias
+
+    def backward(self,gradient: float) -> None:
+        self.weight_gradients = []
+        for i in range(len(self.last_input)):
+            self.weight_gradients.append(self.last_input[i]*gradient)
+
+        self.bias_gradient = gradient
+
+    def update(
+            self,
+            learning_rate: float
+    ) -> None:
+        for i in range(len(self.weights)):
+            self.weights[i] = (
+                    self.weights[i]
+                    - learning_rate * self.weight_gradients[i]
+            )
+
+        self.bias = (
+                self.bias
+                - learning_rate * self.bias_gradient
+        )
+
