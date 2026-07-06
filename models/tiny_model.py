@@ -1,5 +1,6 @@
 from src.embeddings.embedding import Embedding
 from layers.linear import Linear
+from layers.relu import ReLU
 
 class TinyModel:
 
@@ -17,19 +18,22 @@ class TinyModel:
             input_size=embedding_dim
         )
 
+        self.relu = ReLU()
+
     def forward(
             self,
             token_ids: list[int]
     ) -> float:
         embeddings = self.embedding.forward(token_ids)
 
-        prediction = self.linear.forward(
-            embeddings[0]
-        )
+        linear_output = self.linear.forward(embeddings[0])
+        activated_output = self.relu.forward(linear_output)
 
-        return prediction
+        return activated_output
 
     def backward(self,gradient: float) -> None:
+        gradient = self.relu.backward(gradient)
+
         self.linear.backward(gradient)
 
 
