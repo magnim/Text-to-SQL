@@ -29,12 +29,17 @@ class Linear:
             output += self.weights[i] * x[i]
         return output+self.bias
 
-    def backward(self,gradient: float) -> None:
+    def backward(self,gradient: float) -> list[float]:
         self.weight_gradients = []
-        for i in range(len(self.last_input)):
-            self.weight_gradients.append(self.last_input[i]*gradient)
-
+        for value in self.last_input:
+            self.weight_gradients.append(value * gradient)
         self.bias_gradient = gradient
+        input_gradients = []
+
+        for weight in self.weights:
+            input_gradients.append(weight * gradient)
+
+        return input_gradients
 
     def update(
             self,
