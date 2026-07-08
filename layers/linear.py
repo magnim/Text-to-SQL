@@ -2,32 +2,43 @@ import random
 
 class Linear:
 
-    def __init__(self, input_size):
+    def __init__(self, input_size: int, output_size: int):
         self.input_size = input_size
+        self.output_size = output_size
         self.weights = self._initialize_weights()
-        self.bias = self._initialize_bias()
+        self.biases = self._initialize_bias()
 
-    def _initialize_weights(self) -> list[float]:
+    def _initialize_weights(self) -> list[list[float]]:
         weights = []
-        for _ in range(self.input_size):
-            value = random.uniform(-1, 1)
-            weights.append(value)
+        for _ in range(self.output_size):
+            weight = []
+            for _ in range(self.input_size):
+                value = random.uniform(-1, 1)
+                weight.append(value)
+            weights.append(weight)
 
         return weights
 
-    def _initialize_bias(self) -> float:
-        bias = random.uniform(-1, 1)
+    def _initialize_bias(self) -> list[float]:
+        biases = []
+        for _ in range(self.output_size):
+            bias = random.uniform(-1, 1)
+            biases.append(bias)
 
-        return bias
+        return biases
 
-    def forward(self,x: list[float]) -> float:
-        self.last_input = x
+    def forward(self,x: list[float]) -> list[float]:
         if len(x) != self.input_size:
             raise ValueError(f"Expected {self.input_size} inputs, got {len(x)}.")
-        output = 0.0
-        for i in range(len(x)):
-            output += self.weights[i] * x[i]
-        return output+self.bias
+        self.last_input = x
+        outputs = []
+        for weight_vector, bias in zip(self.weights, self.biases):
+            output = 0.0
+
+            for j in range(self.input_size):
+                output += weight_vector[j] * x[j]
+            outputs.append(output+bias)
+        return outputs
 
     def backward(self,gradient: float) -> list[float]:
         self.weight_gradients = []
