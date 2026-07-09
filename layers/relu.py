@@ -3,14 +3,21 @@ class ReLU():
     #     self.last_input = []
     #     self.weight_gradients = []
 
-    def forward(self, x: float) -> float:
+    def forward(self, x: list[float]) -> list[float]:
         self.last_input = x
-        if x<0:
-            return 0.0
-        return x
+        outputs = []
+        for value in x:
+            if value <= 0:
+                outputs.append(0.0)
+            else:
+                outputs.append(value)
+        return outputs
 
-    def backward(self,gradient: float) -> float:
-        if self.last_input<=0:
-            return 0.0
-        else:
-            return gradient
+    def backward(self, gradients: list[float]) -> list[float]:
+        output_gradients = []
+        for value, gradient in zip(self.last_input, gradients):
+            if value <= 0:
+                output_gradients.append(0.0)
+            else:
+                output_gradients.append(gradient)
+        return output_gradients

@@ -114,13 +114,13 @@ Knowledge Timeline
         │
 [✓] Why BPE Exists
         │
-[ ] Build BPE
+[✓] Build BPE
         │
-[ ] Vocabulary
+[✓] Vocabulary
         │
-[ ] Token IDs
+[✓] Token IDs
         │
-[ ] Embeddings
+[x] Embeddings
         │
 [ ] Positional Encoding
         │
@@ -131,3 +131,162 @@ Knowledge Timeline
 [ ] Training
         │
 [ ] Text-to-SQL LLM
+
+
+##################################################
+##################################################
+Tokenizer          ✅
+        │
+        ▼
+Embeddings
+        │
+        ▼
+Positional Embeddings
+        │
+        ▼
+Self-Attention
+        │
+        ▼
+Multi-Head Attention
+        │
+        ▼
+Feed Forward Network
+        │
+        ▼
+LayerNorm
+        │
+        ▼
+Residual Connections
+        │
+        ▼
+Transformer Block
+        │
+        ▼
+GPT-style Model
+        │
+        ▼
+Train on Text-to-SQL
+*****************************************************
+*****************************************************
+Lesson 1 — Why Embeddings Exist     ✅ (Completed)
+
+Lesson 2 — The Embedding Matrix     ✅ (Completed)
+
+Lesson 3 — Embedding Lookup         ✅ (Completed)
+
+Lesson 4 — How Embeddings Learn     ✅ (Completed)
+
+Lesson 5 — Build an Embedding Layer ✅ (Completed)
+*****************************************************
+*****************************************************
+Lesson 1 — What Does "Learning" Mean? ✅ (Completed)
+Lesson 2 — What is a Loss Function?   ✅ (Completed)
+Lesson 3 — Gradient Descent           ✅ (Started)
+Lesson 4 — Backpropagation
+Lesson 5 — Train Our Embedding Layer
+*****************************************************
+*****************************************************
+
+Module 1 ✅
+----------------
+Text
+↓
+
+Tokenizer
+↓
+
+Token IDs
+
+Module 2 ✅
+----------------
+Token IDs
+↓
+
+Embedding Matrix
+↓
+
+Embedding Lookup
+
+Module 3 🚀
+----------------
+Embedding Vectors
+↓
+
+Prediction
+
+↓
+
+Loss
+
+↓
+
+Gradient
+
+↓
+
+Update Embeddings
+
+↓
+
+Better Prediction
+
+Module 4 — Building a Real Transformer
+
+Tentative roadmap:
+
+Why a single Linear Layer isn't enough
+Sequence processing
+Context windows
+Positional Encoding
+Self-Attention
+Multi-Head Attention
+Feed Forward Networks
+Residual Connections
+Layer Normalization
+Transformer Block
+Stacking Transformer Blocks
+Training the complete model
+###############################################
+###############################################
+Module 1
+──────────────
+✅ BPE Tokenizer
+
+Module 2
+──────────────
+✅ Embedding Layer
+
+Module 3
+──────────────
+✅ Learning
+✅ Loss Function
+✅ Gradient Descent
+✅ Backpropagation
+✅ Linear Layer
+✅ TinyModel
+✅ Training Loop
+
+Module 4
+──────────────
+⬜ Why Linear Layers Aren't Enough
+⬜ Context Windows
+⬜ Positional Encoding
+⬜ Self-Attention
+⬜ Multi-Head Attention
+⬜ Feed Forward Network
+⬜ Residual Connections
+⬜ Layer Normalization
+⬜ Transformer Block
+
+Module 5
+──────────────
+⬜ Decoder-only Transformer
+⬜ GPT Architecture
+⬜ Text Generation
+
+Module 6
+──────────────
+⬜ Training a Tiny GPT
+⬜ Sampling
+⬜ Temperature
+⬜ Top-k / Top-p

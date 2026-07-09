@@ -17,6 +17,9 @@ class Linear:
                 weight.append(value)
             weights.append(weight)
 
+        print('*' * 20)
+        print('WEIGHTS:', weights)
+        print('*' * 20)
         return weights
 
     def _initialize_bias(self) -> list[float]:
@@ -24,7 +27,9 @@ class Linear:
         for _ in range(self.output_size):
             bias = random.uniform(-1, 1)
             biases.append(bias)
-
+            print('*'*20)
+            print('BIASES:', biases)
+            print('*'*20)
         return biases
 
     def forward(self,x: list[float]) -> list[float]:
@@ -34,21 +39,32 @@ class Linear:
         outputs = []
         for weight_vector, bias in zip(self.weights, self.biases):
             output = 0.0
-
             for j in range(self.input_size):
+                # print(weight_vector[j])
+                # print(x[j])
                 output += weight_vector[j] * x[j]
             outputs.append(output+bias)
         return outputs
 
-    def backward(self,gradient: float) -> list[float]:
-        self.weight_gradients = []
-        for value in self.last_input:
-            self.weight_gradients.append(value * gradient)
-        self.bias_gradient = gradient
-        input_gradients = []
+    def backward(self, gradients: list[float]) -> list[float]:
+        if len(gradients) != self.output_size:
+            raise ValueError(
+                f"Expected {self.output_size} gradients, got {len(gradients)}."
+            )
 
-        for weight in self.weights:
-            input_gradients.append(weight * gradient)
+        self.weight_gradients  = []
+        self.bias_gradients = []
+        input_gradients = [0.0] * self.input_size
+
+        for weight_vector, gradient in zip(self.weights, gradients):
+            weight_gradient = []
+
+            for j in range(self.input_size):
+                weight_gradient.append(self.last_input[j] * gradient)
+                input_gradients[j] += weight_vector[j] * gradient
+
+            self.weight_gradients.append(weight_gradient)
+            self.bias_gradients.append(gradient)
 
         return input_gradients
 
@@ -56,14 +72,14 @@ class Linear:
             self,
             learning_rate: float
     ) -> None:
-        for i in range(len(self.weights)):
-            self.weights[i] = (
-                    self.weights[i]
-                    - learning_rate * self.weight_gradients[i]
+        for neuron in range(self.output_size):
+            for weight in range(self.input_size):
+                self.weights[neuron][weight] -= (
+                        learning_rate *
+                        self.weight_gradients[neuron][weight]
+                )
+            self.biases[neuron] -= (
+                    learning_rate *
+                    self.bias_gradients[neuron]
             )
-
-        self.bias = (
-                self.bias
-                - learning_rate * self.bias_gradient
-        )
 
