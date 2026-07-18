@@ -1,3 +1,6 @@
+from data.data_loader import DataLoader
+
+
 class Trainer:
 
     def __init__(self, model, loss_fn, learning_rate: float):
@@ -5,15 +8,22 @@ class Trainer:
         self.loss_fn = loss_fn
         self.learning_rate = learning_rate
 
-    def train(self,training_data: list[tuple[list[int], int]],epochs: int) -> None:
+    def train(self, data_loader: DataLoader, epochs: int) -> None:
         for epoch in range(epochs):
             epoch_loss = 0.0
-            for token_ids, target in training_data:
-                logits = self.model.forward(token_ids)
-                loss = self.loss_fn.forward(logits, target)
-                gradients = self.loss_fn.backward()
-                self.model.backward(gradients)
-                self.model.update(self.learning_rate)
-                epoch_loss += loss
-            average_loss = epoch_loss / len(training_data)
-            print(f"Epoch {epoch + 1:2d} | "f"Average Loss: {average_loss:.6f}")
+            total_examples = 0
+
+            for batch in data_loader:
+                for context, target in zip(batch.contexts, batch.targets):
+                    logits = self.model.forward(context)
+                    loss = self.loss_fn.forward(logits, target)
+                    gradients = self.loss_fn.backward()
+
+                    self.model.backward(gradients)
+                    self.model.update(self.learning_rate)
+
+                    epoch_loss += loss
+                    total_examples += 1
+
+            average_loss = epoch_loss / total_examples
+            print(f"Epoch {epoch + 1}: Loss = {average_loss:.6f}")

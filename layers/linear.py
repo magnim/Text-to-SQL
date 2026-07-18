@@ -16,10 +16,6 @@ class Linear:
                 value = random.uniform(-1, 1)
                 weight.append(value)
             weights.append(weight)
-
-        print('*' * 20)
-        print('WEIGHTS:', weights)
-        print('*' * 20)
         return weights
 
     def _initialize_bias(self) -> list[float]:
@@ -27,9 +23,6 @@ class Linear:
         for _ in range(self.output_size):
             bias = random.uniform(-1, 1)
             biases.append(bias)
-            print('*'*20)
-            print('BIASES:', biases)
-            print('*'*20)
         return biases
 
     def forward(self,x: list[float]) -> list[float]:
@@ -40,8 +33,6 @@ class Linear:
         for weight_vector, bias in zip(self.weights, self.biases):
             output = 0.0
             for j in range(self.input_size):
-                # print(weight_vector[j])
-                # print(x[j])
                 output += weight_vector[j] * x[j]
             outputs.append(output+bias)
         return outputs
