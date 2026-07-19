@@ -57,10 +57,7 @@ class SelfAttention:
 
         for row in embeddings:
             if len(row) != self.embedding_dim:
-                raise ValueError(
-                    f"Each embedding must have {self.embedding_dim} values, "
-                    f"but received {len(row)}."
-                )
+                raise ValueError(f"Each embedding must have {self.embedding_dim} values, but received {len(row)}.")
 
     def _validate_output_gradient(self, output_gradient: list[list[float]]) -> None:
         if self.last_output is None:
@@ -96,11 +93,7 @@ class SelfAttention:
         scale = math.sqrt(self.attention_dim)
         return [[score / scale for score in row] for row in attention_scores]
 
-    def _attention_output(
-        self,
-        attention_weights: list[list[float]],
-        values: list[list[float]],
-    ) -> list[list[float]]:
+    def _attention_output(self,attention_weights: list[list[float]],values: list[list[float]],) -> list[list[float]]:
         self.last_attention_weights = attention_weights
         self.last_values = values
         self.last_output = matrix_multiply(attention_weights, values)
@@ -126,10 +119,7 @@ class SelfAttention:
 
         return self._attention_output(attention_weights, self.last_values)
 
-    def _attention_output_backward(
-        self,
-        output_gradient: list[list[float]],
-    ) -> tuple[list[list[float]], list[list[float]]]:
+    def _attention_output_backward(self,output_gradient: list[list[float]]) -> tuple[list[list[float]], list[list[float]]]:
         if self.last_attention_weights is None or self.last_values is None:
             raise RuntimeError("Forward must be called before backward.")
 
@@ -138,11 +128,7 @@ class SelfAttention:
 
         return attention_weights_gradient, values_gradient
 
-    def _softmax_backward(
-        self,
-        softmax_output: list[float],
-        output_gradient: list[float],
-    ) -> list[float]:
+    def _softmax_backward(self,softmax_output: list[float],output_gradient: list[float],) -> list[float]:
         input_gradient = [0.0 for _ in softmax_output]
 
         for input_index in range(len(softmax_output)):
@@ -156,20 +142,14 @@ class SelfAttention:
 
         return input_gradient
 
-    def _attention_weights_backward(
-        self,
-        attention_weights_gradient: list[list[float]],
-    ) -> list[list[float]]:
+    def _attention_weights_backward(self,attention_weights_gradient: list[list[float]]) -> list[list[float]]:
         if self.last_attention_weights is None:
             raise RuntimeError("Forward must be called before backward.")
 
         scaled_scores_gradient = []
 
         for row_index in range(len(self.last_attention_weights)):
-            row_gradient = self._softmax_backward(
-                self.last_attention_weights[row_index],
-                attention_weights_gradient[row_index],
-            )
+            row_gradient = self._softmax_backward(self.last_attention_weights[row_index],attention_weights_gradient[row_index],)
             scaled_scores_gradient.append(row_gradient)
 
         return scaled_scores_gradient

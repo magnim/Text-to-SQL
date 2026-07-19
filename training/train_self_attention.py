@@ -18,44 +18,29 @@ def validate_matrix(
     actual_shape = matrix_shape(matrix)
 
     if actual_shape != expected_shape:
-        raise ValueError(
-            f"{matrix_name} has shape {actual_shape}, "
-            f"but expected {expected_shape}."
-        )
+        raise ValueError(f"{matrix_name} has shape {actual_shape}, but expected {expected_shape}.")
 
     for row_index, row in enumerate(matrix):
         for column_index, value in enumerate(row):
             if not math.isfinite(value):
-                raise ValueError(
-                    f"{matrix_name}[{row_index}][{column_index}] "
-                    f"is not finite: {value}"
-                )
+                raise ValueError(f"{matrix_name}[{row_index}][{column_index}] is not finite: {value}")
 
 
-def mse_forward(
-    prediction: list[list[float]],
-    target: list[list[float]],
-) -> float:
+def mse_forward(prediction: list[list[float]],target: list[list[float]]) -> float:
     prediction_shape = matrix_shape(prediction)
     target_shape = matrix_shape(target)
 
     if prediction_shape != target_shape:
-        raise ValueError(
-            f"Prediction shape {prediction_shape} does not match "
-            f"target shape {target_shape}."
-        )
+        raise ValueError(f"Prediction shape {prediction_shape} does not match target shape {target_shape}.")
 
     total_squared_error = 0.0
     number_of_values = 0
 
     for row_index in range(len(prediction)):
         for column_index in range(len(prediction[0])):
-            difference = (
-                prediction[row_index][column_index]
-                - target[row_index][column_index]
-            )
+            difference = (prediction[row_index][column_index]- target[row_index][column_index])
 
-            total_squared_error += difference * difference
+            total_squared_error += difference ** 2
             number_of_values += 1
 
     if number_of_values == 0:
@@ -64,29 +49,17 @@ def mse_forward(
     return total_squared_error / number_of_values
 
 
-def mse_backward(
-    prediction: list[list[float]],
-    target: list[list[float]],
-) -> list[list[float]]:
+def mse_backward(prediction: list[list[float]],target: list[list[float]]) -> list[list[float]]:
     prediction_shape = matrix_shape(prediction)
     target_shape = matrix_shape(target)
 
     if prediction_shape != target_shape:
-        raise ValueError(
-            f"Prediction shape {prediction_shape} does not match "
-            f"target shape {target_shape}."
-        )
+        raise ValueError(f"Prediction shape {prediction_shape} does not match target shape {target_shape}.")
 
     number_of_values = len(prediction) * len(prediction[0])
 
     return [
-        [
-            2.0
-            * (
-                prediction[row_index][column_index]
-                - target[row_index][column_index]
-            )
-            / number_of_values
+        [2.0 * (prediction[row_index][column_index]- target[row_index][column_index])/ number_of_values
             for column_index in range(len(prediction[0]))
         ]
         for row_index in range(len(prediction))
@@ -117,27 +90,13 @@ def train_self_attention() -> None:
         [-0.3, 0.4],
     ]
 
-    expected_input_shape = (
-        sequence_length,
-        embedding_dimension,
-    )
+    expected_input_shape = (sequence_length,embedding_dimension)
 
-    expected_output_shape = (
-        sequence_length,
-        attention_dimension,
-    )
+    expected_output_shape = (sequence_length,attention_dimension)
 
-    validate_matrix(
-        inputs,
-        expected_input_shape,
-        "Inputs",
-    )
+    validate_matrix(inputs,expected_input_shape,"Inputs",)
 
-    validate_matrix(
-        target,
-        expected_output_shape,
-        "Target",
-    )
+    validate_matrix(target,expected_output_shape,"Target",)
 
     initial_loss = None
     final_loss = None
@@ -150,38 +109,19 @@ def train_self_attention() -> None:
     for epoch in range(1, number_of_epochs + 1):
         prediction = attention.forward(inputs)
 
-        validate_matrix(
-            prediction,
-            expected_output_shape,
-            "Prediction",
-        )
+        validate_matrix(prediction,expected_output_shape,"Prediction")
 
         loss = mse_forward(prediction, target)
 
-        output_gradient = mse_backward(
-            prediction,
-            target,
-        )
+        output_gradient = mse_backward(prediction,target)
 
-        validate_matrix(
-            output_gradient,
-            expected_output_shape,
-            "Output gradient",
-        )
+        validate_matrix(output_gradient,expected_output_shape,"Output gradient",)
 
-        input_gradient = attention.backward(
-            output_gradient,
-        )
+        input_gradient = attention.backward(output_gradient)
 
-        validate_matrix(
-            input_gradient,
-            expected_input_shape,
-            "Input gradient",
-        )
+        validate_matrix(input_gradient,expected_input_shape,"Input gradient")
 
-        attention.update_parameters(
-            learning_rate,
-        )
+        attention.update_parameters(learning_rate,)
 
         if initial_loss is None:
             initial_loss = loss
@@ -189,10 +129,7 @@ def train_self_attention() -> None:
         final_loss = loss
 
         if epoch == 1 or epoch % 20 == 0:
-            print(
-                f"Epoch {epoch:3d} | "
-                f"Loss: {loss:.8f}"
-            )
+            print(f"Epoch {epoch:3d} | "f"Loss: {loss:.8f}")
 
     if initial_loss is None or final_loss is None:
         raise RuntimeError("Training did not run.")
@@ -202,10 +139,7 @@ def train_self_attention() -> None:
     print(f"Final loss:   {final_loss:.8f}")
 
     if final_loss >= initial_loss:
-        raise AssertionError(
-            "Training failed: final loss was not lower "
-            "than the initial loss."
-        )
+        raise AssertionError("Training failed: final loss was not lower ""than the initial loss.")
 
     final_prediction = attention.forward(inputs)
 
@@ -213,9 +147,7 @@ def train_self_attention() -> None:
     print("Final prediction:")
 
     for row in final_prediction:
-        print(
-            [round(value, 4) for value in row]
-        )
+        print([round(value, 4) for value in row])
 
     print()
     print("Target:")
