@@ -173,11 +173,7 @@ class SelfAttention:
 
         return queries_gradient, keys_gradient
 
-    def _projection_backward(
-        self,
-        output_gradient: list[list[float]],
-        weights: list[list[float]],
-    ) -> tuple[list[list[float]], list[list[float]], list[float]]:
+    def _projection_backward(self,output_gradient: list[list[float]],weights: list[list[float]],) -> tuple[list[list[float]], list[list[float]], list[float]]:
         if self.last_embeddings is None:
             raise RuntimeError("Forward must be called before backward.")
 
@@ -222,22 +218,12 @@ class SelfAttention:
             x_gradient_from_value,
         )
 
-    def _update_matrix(
-        self,
-        matrix: list[list[float]],
-        gradient: list[list[float]],
-        learning_rate: float,
-    ) -> None:
+    def _update_matrix(self,matrix: list[list[float]],gradient: list[list[float]],learning_rate: float,) -> None:
         for row_index in range(len(matrix)):
             for column_index in range(len(matrix[0])):
                 matrix[row_index][column_index] -= learning_rate * gradient[row_index][column_index]
 
-    def _update_vector(
-        self,
-        vector: list[float],
-        gradient: list[float],
-        learning_rate: float,
-    ) -> None:
+    def _update_vector(self,vector: list[float],gradient: list[float],learning_rate: float,) -> None:
         for index in range(len(vector)):
             vector[index] -= learning_rate * gradient[index]
 
@@ -245,14 +231,8 @@ class SelfAttention:
         if learning_rate < 0:
             raise ValueError("learning_rate cannot be negative.")
 
-        gradients = [
-            self.query_projection_gradient,
-            self.key_projection_gradient,
-            self.value_projection_gradient,
-            self.query_bias_gradient,
-            self.key_bias_gradient,
-            self.value_bias_gradient,
-        ]
+        gradients = [self.query_projection_gradient,self.key_projection_gradient,self.value_projection_gradient,
+                     self.query_bias_gradient,self.key_bias_gradient,self.value_bias_gradient]
 
         if any(gradient is None for gradient in gradients):
             raise RuntimeError("Backward must be called before updating parameters.")

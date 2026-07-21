@@ -65,13 +65,7 @@ def matrix_add(matrix_a: list[list[float]], matrix_b: list[list[float]]) -> list
     rows = len(matrix_a)
     columns = len(matrix_a[0])
 
-    return [
-        [
-            matrix_a[row][column] + matrix_b[row][column]
-            for column in range(columns)
-        ]
-        for row in range(rows)
-    ]
+    return [[matrix_a[row][column] + matrix_b[row][column] for column in range(columns)]for row in range(rows)]
 
 if __name__ == "__main__":
     vector_a = [1, 2, 3]

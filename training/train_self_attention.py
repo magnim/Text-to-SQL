@@ -115,14 +115,10 @@ def train_self_attention() -> None:
 
         output_gradient = mse_backward(prediction,target)
 
-        validate_matrix(output_gradient,expected_output_shape,"Output gradient",)
-
+        validate_matrix(output_gradient,expected_output_shape,"Output gradient")
         input_gradient = attention.backward(output_gradient)
-
         validate_matrix(input_gradient,expected_input_shape,"Input gradient")
-
-        attention.update_parameters(learning_rate,)
-
+        attention.update_parameters(learning_rate)
         if initial_loss is None:
             initial_loss = loss
 
