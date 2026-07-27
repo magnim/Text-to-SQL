@@ -78,3 +78,45 @@ class LayerNormalization:
         self.last_output = outputs
 
         return outputs
+
+    def _calculate_beta_gradient(self,output_gradient: list[list[float]],) -> list[float]:
+        return [sum(row[column] for row in output_gradient) for column in range(self.embedding_dimension)]
+
+    def _calculate_gamma_gradient(self,output_gradient: list[list[float]]) -> list[float]:
+        return [sum(gradient_row[column]* normalized_row[column]
+                    for gradient_row, normalized_row in zip(output_gradient,self.last_normalized_inputs,))
+                for column in range(self.embedding_dimension)]
+
+    def _normalize_backward(self,output_gradient: list[list[float]],) -> list[list[float]]:
+        input_gradients = []
+
+        for (gradient_row,normalized_row,inverse_standard_deviation) in zip(output_gradient,self.last_normalized_inputs,self.last_inverse_standard_deviations):
+            feature_count = self.embedding_dimension
+            sum_gradient = sum(gradient_row)
+            sum_gradient_times_normalized = sum(gradient * normalized for gradient, normalized in zip(gradient_row,normalized_row,))
+            input_gradient = []
+            for (gradient,normalized,gamma) in zip(gradient_row,normalized_row,self.gamma):
+                value = (gamma * inverse_standard_deviation / feature_count) * (feature_count * gradient- sum_gradient- normalized* sum_gradient_times_normalized)
+                input_gradient.append(value)
+            input_gradients.append(input_gradient)
+
+        return input_gradients
+
+    def _validate_output_gradient(self,output_gradient: list[list[float]]) -> None:
+        if not output_gradient:
+            raise ValueError("Output gradient cannot be empty.")
+
+        if len(output_gradient) != len(self.last_output):
+            raise ValueError("Gradient shape does not match output.")
+
+        for row in output_gradient:
+            if len(row) != self.embedding_dimension:
+                raise ValueError(f"Each gradient row must contain {self.embedding_dimension} values.")
+
+    def update_parameters(self,learning_rate: float) -> None:
+        if learning_rate <= 0.0:
+            raise ValueError("Learning rate must be positive.")
+
+        for index in range(self.embedding_dimension):
+            self.gamma[index] -= (learning_rate * self.gamma_gradient[index])
+            self.beta[index] -= (learning_rate * self.beta_gradient[index])
