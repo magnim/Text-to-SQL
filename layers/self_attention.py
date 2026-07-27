@@ -39,6 +39,9 @@ class SelfAttention:
         self.last_scaled_attention_scores = None
         self.last_attention_weights = None
         self.last_output = None
+        self.last_masked_attention_scores = None
+        self.last_attention_mask = None
+        self.last_attention_output = None
 
     def _initialize_weights(self) -> list[list[float]]:
         limit = math.sqrt(6.0 / (self.embedding_dim + self.attention_dim))
@@ -68,25 +71,18 @@ class SelfAttention:
 
         for row in output_gradient:
             if len(row) != self.attention_dim:
-                raise ValueError(
-                    f"Each output-gradient row must have {self.attention_dim} values."
-                )
+                raise ValueError(f"Each output-gradient row must have {self.attention_dim} values.")
 
     def _add_bias(self, matrix: list[list[float]], bias: list[float]) -> list[list[float]]:
-        return [
-            [row[index] + bias[index] for index in range(len(row))]
-            for row in matrix
-        ]
+        return [[row[index] + bias[index] for index in range(len(row))] for row in matrix]
 
     def _softmax(self, attention_scores: list[list[float]]) -> list[list[float]]:
         attention_weights = []
-
         for row in attention_scores:
             maximum_score = max(row)
             exponentials = [math.exp(score - maximum_score) for score in row]
             total = sum(exponentials)
             attention_weights.append([value / total for value in exponentials])
-
         return attention_weights
 
     def _scale_attention_scores(self, attention_scores: list[list[float]]) -> list[list[float]]:
@@ -99,6 +95,40 @@ class SelfAttention:
         self.last_output = matrix_multiply(attention_weights, values)
 
         return self.last_output
+
+    def _create_causal_mask(self,sequence_length: int,) -> list[list[int]]:
+        if not isinstance(sequence_length, int):
+            raise TypeError("sequence_length must be an integer.")
+
+        if sequence_length <= 0:
+            raise ValueError("sequence_length must be greater than zero.")
+        mask = []
+        for row in range(sequence_length):
+            current_row = []
+            for column in range(sequence_length):
+                if column <= row:
+                    current_row.append(1)
+                else:
+                    current_row.append(0)
+            mask.append(current_row)
+        return mask
+
+    def _apply_attention_mask(self,scaled_scores: list[list[float]],attention_mask: list[list[int]]) -> list[list[float]]:
+        if len(scaled_scores) != len(attention_mask):
+            raise ValueError("Scores and mask must have the same number of rows.")
+        masked_scores = []
+        MASK_VALUE = -1e9
+        for score_row, mask_row in zip(scaled_scores,attention_mask,):
+            if len(score_row) != len(mask_row):
+                raise ValueError("Scores and mask row sizes must match.")
+            current_row = []
+            for score, allowed in zip(score_row, mask_row):
+                if allowed:
+                    current_row.append(score)
+                else:
+                    current_row.append(MASK_VALUE)
+            masked_scores.append(current_row)
+        return masked_scores
 
     def forward(self, embeddings: list[list[float]]) -> list[list[float]]:
         self._validate_embeddings(embeddings)
@@ -115,9 +145,14 @@ class SelfAttention:
 
         self.last_attention_scores = matrix_multiply(self.last_queries, transpose(self.last_keys))
         self.last_scaled_attention_scores = self._scale_attention_scores(self.last_attention_scores)
-        attention_weights = self._softmax(self.last_scaled_attention_scores)
 
-        return self._attention_output(attention_weights, self.last_values)
+        self.last_attention_mask = self._create_causal_mask(len(embeddings))
+        self.last_masked_attention_scores = self._apply_attention_mask(self.last_scaled_attention_scores,self.last_attention_mask)
+
+        self.last_attention_weights = self._softmax(self.last_masked_attention_scores)
+        self.last_attention_output = matrix_multiply(self.last_attention_weights, self.last_values)
+
+        return self.last_attention_output
 
     def _attention_output_backward(self,output_gradient: list[list[float]]) -> tuple[list[list[float]], list[list[float]]]:
         if self.last_attention_weights is None or self.last_values is None:
@@ -187,11 +222,24 @@ class SelfAttention:
 
         return input_gradient, weights_gradient, bias_gradient
 
+    def _attention_mask_backward(self,masked_scores_gradient: list[list[float]],attention_mask: list[list[int]],) -> list[list[float]]:
+        if len(masked_scores_gradient) != len(attention_mask):
+            raise ValueError("Gradient and attention mask must have the same number of rows.")
+
+        scaled_scores_gradient = []
+
+        for gradient_row, mask_row in zip(masked_scores_gradient, attention_mask):
+            if len(gradient_row) != len(mask_row):
+                raise ValueError("Gradient and attention mask rows must have the same length.")
+            scaled_scores_gradient.append([gradient if mask_value == 1 else 0.0 for gradient, mask_value in zip(gradient_row, mask_row)])
+        return scaled_scores_gradient
+
     def backward(self, output_gradient: list[list[float]]) -> list[list[float]]:
         self._validate_output_gradient(output_gradient)
 
         attention_weights_gradient, values_gradient = self._attention_output_backward(output_gradient)
-        scaled_scores_gradient = self._attention_weights_backward(attention_weights_gradient)
+        masked_scores_gradient = self._attention_weights_backward(attention_weights_gradient)
+        scaled_scores_gradient = self._attention_mask_backward(masked_scores_gradient,self.last_attention_mask)
         scores_gradient = self._scaled_scores_backward(scaled_scores_gradient)
         queries_gradient, keys_gradient = self._scores_backward(scores_gradient)
 
@@ -244,6 +292,8 @@ class SelfAttention:
         self._update_vector(self.query_bias, self.query_bias_gradient, learning_rate)
         self._update_vector(self.key_bias, self.key_bias_gradient, learning_rate)
         self._update_vector(self.value_bias, self.value_bias_gradient, learning_rate)
+
+
 
 
 if __name__ == "__main__":
