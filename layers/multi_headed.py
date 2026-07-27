@@ -60,10 +60,7 @@ class MultiHeadSelfAttention:
             for _ in range(self.embedding_dim)
         ]
 
-    def _validate_embeddings(
-        self,
-        embeddings: list[list[float]],
-    ) -> None:
+    def _validate_embeddings(self,embeddings: list[list[float]],) -> None:
         if not isinstance(embeddings, list):
             raise TypeError(
                 "embeddings must be a list of token embeddings."
@@ -166,108 +163,60 @@ class MultiHeadSelfAttention:
 
         for head_index, head in enumerate(self.heads):
             head_output = head.forward(embeddings)
-            self._validate_head_output(
-                head_output,
-                head_index,
-                sequence_length,
-            )
+            self._validate_head_output(head_output,head_index,sequence_length)
             head_outputs.append(head_output)
 
-        concatenated_output = self._concatenate_head_outputs(
-            head_outputs
-        )
+        concatenated_output = self._concatenate_head_outputs(head_outputs)
         self.last_concatenated_output = concatenated_output
-        self.last_output = self._apply_output_projection(
-            concatenated_output
-        )
+        self.last_output = self._apply_output_projection(concatenated_output)
 
         return self.last_output
 
     def _output_projection_backward(self,output_gradient: list[list[float]],) -> list[list[float]]:
         if self.last_concatenated_output is None:
-            raise RuntimeError(
-                "forward() must be called before backward()."
-            )
+            raise RuntimeError("forward() must be called before backward().")
 
         sequence_length = len(output_gradient)
-        self.output_projection_gradient = [
-            [0.0 for _ in range(self.embedding_dim)]
-            for _ in range(self.embedding_dim)
-        ]
-        self.output_bias_gradient = [
-            0.0 for _ in range(self.embedding_dim)
-        ]
-        concatenated_gradient = [
-            [0.0 for _ in range(self.embedding_dim)]
-            for _ in range(sequence_length)
-        ]
+        self.output_projection_gradient = [[0.0 for _ in range(self.embedding_dim)] for _ in range(self.embedding_dim)]
+        self.output_bias_gradient = [0.0 for _ in range(self.embedding_dim)]
+        concatenated_gradient = [[0.0 for _ in range(self.embedding_dim)]for _ in range(sequence_length)]
 
         for token_index in range(sequence_length):
-            concatenated_row = self.last_concatenated_output[
-                token_index
-            ]
+            concatenated_row = self.last_concatenated_output[token_index]
             gradient_row = output_gradient[token_index]
 
             for output_feature in range(self.embedding_dim):
                 gradient_value = gradient_row[output_feature]
-                self.output_bias_gradient[output_feature] += (
-                    gradient_value
-                )
+                self.output_bias_gradient[output_feature] += (gradient_value)
 
                 for input_feature in range(self.embedding_dim):
-                    self.output_projection_gradient[
-                        input_feature
-                    ][output_feature] += (
-                        concatenated_row[input_feature]
-                        * gradient_value
-                    )
+                    self.output_projection_gradient[input_feature][output_feature] += (concatenated_row[input_feature] * gradient_value)
 
-                    concatenated_gradient[
-                        token_index
-                    ][input_feature] += (
-                        gradient_value
-                        * self.output_projection[
-                            input_feature
-                        ][output_feature]
-                    )
+                    concatenated_gradient[token_index][input_feature] += (gradient_value * self.output_projection[input_feature][output_feature])
 
         return concatenated_gradient
 
     def _split_gradient(self,concatenated_gradient: list[list[float]],) -> list[list[list[float]]]:
         if not isinstance(concatenated_gradient, list):
             raise TypeError(
-                "concatenated_gradient must be a list."
-            )
+                "concatenated_gradient must be a list.")
 
         if not concatenated_gradient:
-            raise ValueError(
-                "concatenated_gradient cannot be empty."
-            )
+            raise ValueError("concatenated_gradient cannot be empty.")
 
-        for token_index, gradient_row in enumerate(
-            concatenated_gradient
-        ):
-            if not isinstance(gradient_row, list):
-                raise TypeError(
-                    f"Gradient row {token_index} must be a list."
-                )
+        for token_index, grad_row in enumerate(concatenated_gradient):
+            if not isinstance(grad_row, list):
+                raise TypeError(f"Gradient row {token_index} must be a list.")
 
-            if len(gradient_row) != self.embedding_dim:
-                raise ValueError(
-                    f"Gradient row {token_index} must contain "
-                    f"{self.embedding_dim} features, but received "
-                    f"{len(gradient_row)}."
-                )
+            if len(grad_row) != self.embedding_dim:
+                raise ValueError(f"Gradient row {token_index} must contain {self.embedding_dim} features, but received {len(grad_row)}.")
 
         head_gradients = []
 
         for head_index in range(self.num_heads):
             start_feature = head_index * self.head_dim
             end_feature = start_feature + self.head_dim
-            head_gradient = [
-                gradient_row[start_feature:end_feature]
-                for gradient_row in concatenated_gradient
-            ]
+            head_gradient = [grad_row[start_feature:end_feature] for grad_row in concatenated_gradient]
             head_gradients.append(head_gradient)
 
         return head_gradients
@@ -277,41 +226,22 @@ class MultiHeadSelfAttention:
         self._validate_output_gradient(output_gradient)
         sequence_length = len(output_gradient)
 
-        concatenated_gradient = self._output_projection_backward(
-            output_gradient
-        )
-        head_gradients = self._split_gradient(
-            concatenated_gradient
-        )
-        final_input_gradient = [
-            [0.0 for _ in range(self.embedding_dim)]
-            for _ in range(sequence_length)
-        ]
+        concatenated_gradient = self._output_projection_backward(output_gradient)
+        head_gradients = self._split_gradient(concatenated_gradient)
+        final_input_gradient = [[0.0 for _ in range(self.embedding_dim)] for _ in range(sequence_length)]
 
-        for head_index, (head, head_gradient) in enumerate(
-            zip(self.heads, head_gradients)
-        ):
+        for head_index, (head, head_gradient) in enumerate(zip(self.heads, head_gradients)):
             input_gradient = head.backward(head_gradient)
 
             if len(input_gradient) != sequence_length:
-                raise ValueError(
-                    f"Head {head_index} returned an invalid input-"
-                    "gradient sequence length."
-                )
+                raise ValueError(f"Head {head_index} returned an invalid input-gradient sequence length.")
 
-            for token_index, gradient_row in enumerate(
-                input_gradient
-            ):
+            for token_index, gradient_row in enumerate(input_gradient):
                 if len(gradient_row) != self.embedding_dim:
-                    raise ValueError(
-                        f"Head {head_index}, token {token_index} "
-                        "returned an invalid input-gradient width."
-                    )
+                    raise ValueError(f"Head {head_index}, token {token_index} returned an invalid input-gradient width.")
 
                 for feature_index in range(self.embedding_dim):
-                    final_input_gradient[
-                        token_index
-                    ][feature_index] += gradient_row[feature_index]
+                    final_input_gradient[token_index][feature_index] += gradient_row[feature_index]
 
         return final_input_gradient
 
@@ -321,38 +251,21 @@ class MultiHeadSelfAttention:
             raise TypeError("learning_rate must be numeric.")
 
         if learning_rate < 0:
-            raise ValueError(
-                "learning_rate cannot be negative."
-            )
+            raise ValueError("learning_rate cannot be negative.")
 
-        if (
-            self.output_projection_gradient is None
-            or self.output_bias_gradient is None
-        ):
+        if self.output_projection_gradient is None or self.output_bias_gradient is None:
             raise RuntimeError(
-                "backward() must be called before "
-                "update_parameters()."
-            )
+                "backward() must be called before update_parameters().")
 
         for head in self.heads:
             head.update_parameters(learning_rate)
 
         for input_feature in range(self.embedding_dim):
             for output_feature in range(self.embedding_dim):
-                self.output_projection[
-                    input_feature
-                ][output_feature] -= (
-                    learning_rate
-                    * self.output_projection_gradient[
-                        input_feature
-                    ][output_feature]
-                )
+                self.output_projection[input_feature][output_feature] -= (learning_rate * self.output_projection_gradient[input_feature][output_feature])
 
         for feature_index in range(self.embedding_dim):
-            self.output_bias[feature_index] -= (
-                learning_rate
-                * self.output_bias_gradient[feature_index]
-            )
+            self.output_bias[feature_index] -= (learning_rate * self.output_bias_gradient[feature_index])
 
 
 if __name__ == "__main__":
