@@ -13,10 +13,10 @@ class FeedForwardNetwork:
         self.embedding_dimension = embedding_dimension
         self.hidden_dimension = hidden_dimension
 
-        self.first_weights = self._initialize_matrix(embedding_dimension,hidden_dimension,)
+        self.first_weights = self._initialize_matrix(embedding_dimension,hidden_dimension)
         self.first_bias = [0.0] * hidden_dimension
 
-        self.second_weights = self._initialize_matrix(hidden_dimension,embedding_dimension,)
+        self.second_weights = self._initialize_matrix(hidden_dimension,embedding_dimension)
         self.second_bias = [0.0] * embedding_dimension
 
         self.first_weights_gradient = None
@@ -54,8 +54,8 @@ class FeedForwardNetwork:
         first_projection = matrix_multiply(inputs, self.first_weights)
         self.last_first_projection = self._add_bias(first_projection, self.first_bias)
         self.last_activated = self._relu(self.last_first_projection)
-        second_projection = matrix_multiply(self.last_activated,self.second_weights,)
-        self.last_output = self._add_bias(second_projection,self.second_bias,)
+        second_projection = matrix_multiply(self.last_activated,self.second_weights)
+        self.last_output = self._add_bias(second_projection,self.second_bias)
         return self.last_output
 
     def _relu_backward(self,output_gradient: list[list[float]],relu_inputs: list[list[float]]) -> list[list[float]]:
