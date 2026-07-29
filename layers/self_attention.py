@@ -63,10 +63,11 @@ class SelfAttention:
                 raise ValueError(f"Each embedding must have {self.embedding_dim} values, but received {len(row)}.")
 
     def _validate_output_gradient(self, output_gradient: list[list[float]]) -> None:
-        if self.last_output is None:
+        if self.last_attention_output is None:
+            print('*')
             raise RuntimeError("Forward must be called before backward.")
 
-        if len(output_gradient) != len(self.last_output):
+        if len(output_gradient) != len(self.last_attention_output):
             raise ValueError("Output gradient has an incorrect number of rows.")
 
         for row in output_gradient:
@@ -156,6 +157,7 @@ class SelfAttention:
 
     def _attention_output_backward(self,output_gradient: list[list[float]]) -> tuple[list[list[float]], list[list[float]]]:
         if self.last_attention_weights is None or self.last_values is None:
+            print('**')
             raise RuntimeError("Forward must be called before backward.")
 
         attention_weights_gradient = matrix_multiply(output_gradient, transpose(self.last_values))
@@ -179,6 +181,7 @@ class SelfAttention:
 
     def _attention_weights_backward(self,attention_weights_gradient: list[list[float]]) -> list[list[float]]:
         if self.last_attention_weights is None:
+            print('***')
             raise RuntimeError("Forward must be called before backward.")
 
         scaled_scores_gradient = []
@@ -201,6 +204,7 @@ class SelfAttention:
         scores_gradient: list[list[float]],
     ) -> tuple[list[list[float]], list[list[float]]]:
         if self.last_queries is None or self.last_keys is None:
+            print('****')
             raise RuntimeError("Forward must be called before backward.")
 
         queries_gradient = matrix_multiply(scores_gradient, self.last_keys)
@@ -210,6 +214,7 @@ class SelfAttention:
 
     def _projection_backward(self,output_gradient: list[list[float]],weights: list[list[float]],) -> tuple[list[list[float]], list[list[float]], list[float]]:
         if self.last_embeddings is None:
+            print('*****')
             raise RuntimeError("Forward must be called before backward.")
 
         input_gradient = matrix_multiply(output_gradient, transpose(weights))

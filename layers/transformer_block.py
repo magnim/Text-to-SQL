@@ -51,6 +51,31 @@ class TransformerBlock:
             if len(row) != self.embedding_dimension:
                 raise ValueError(f"Each input row must contain {self.embedding_dimension} values.")
 
+    def _add_gradients(self,first_gradient: list[list[float]],second_gradient: list[list[float]]) -> list[list[float]]:
+        if len(first_gradient) != len(second_gradient):
+            raise ValueError("Gradient matrices must have the same number of rows.")
+        combined_gradient = []
+        for first_row, second_row in zip(first_gradient,second_gradient):
+            if len(first_row) != len(second_row):
+                raise ValueError("Gradient matrices must have identical shapes.")
+            combined_row = [first_value + second_value for first_value, second_value in zip(first_row,second_row)]
+            combined_gradient.append(combined_row)
+        return combined_gradient
+
+    def _validate_output_gradient(self,output_gradient: list[list[float]]) -> None:
+        if self.last_output is None:
+            raise RuntimeError("forward() must be called before backward().")
+
+        if not output_gradient:
+            raise ValueError("Output gradient cannot be empty.")
+
+        if len(output_gradient) != len(self.last_output):
+            raise ValueError("Output gradient must have the same number of rows as the block output.")
+
+        for gradient_row, output_row in zip(output_gradient,self.last_output):
+            if len(gradient_row) != len(output_row):
+                raise ValueError("Output gradient must have the same shape as the block output.")
+
     def forward(self,inputs: list[list[float]]) -> list[list[float]]:
         self._validate_inputs(inputs)
         self.last_inputs = [row.copy() for row in inputs]
@@ -68,3 +93,95 @@ class TransformerBlock:
         self.last_output = output
         return output
 
+    def backward(self,output_gradient: list[list[float]]) -> list[list[float]]:
+        self._validate_output_gradient(output_gradient)
+        feed_forward_residual_gradient = (self.second_layer_norm.backward(output_gradient))
+        (direct_first_normalized_gradient,feed_forward_output_gradient) = self.feed_forward_residual.backward(feed_forward_residual_gradient)
+        feed_forward_input_gradient = (self.feed_forward.backward(feed_forward_output_gradient))
+        first_normalized_gradient = self._add_gradients(direct_first_normalized_gradient,feed_forward_input_gradient,)
+        attention_residual_gradient = (self.first_layer_norm.backward(first_normalized_gradient))
+        (direct_input_gradient,attention_output_gradient) = self.attention_residual.backward(attention_residual_gradient)
+        attention_input_gradient = (self.attention.backward(attention_output_gradient))
+        input_gradient = self._add_gradients(direct_input_gradient,attention_input_gradient)
+        return input_gradient
+
+    def update_parameters(self,learning_rate: float) -> None:
+        if learning_rate <= 0.0:
+            raise ValueError("Learning rate must be positive.")
+
+        self.attention.update_parameters(learning_rate)
+
+        self.first_layer_norm.update_parameters(learning_rate)
+
+        self.feed_forward.update_parameters(learning_rate)
+
+        self.second_layer_norm.update_parameters(learning_rate)
+
+
+transformer_block = TransformerBlock(
+    embedding_dimension=4,
+    number_of_heads=2,
+    hidden_dimension=8,
+)
+
+inputs = [
+    [0.1, 0.2, 0.3, 0.4],
+    [0.5, 0.6, 0.7, 0.8],
+    [0.9, 1.0, 1.1, 1.2],
+]
+
+outputs = transformer_block.forward(inputs)
+
+print("Transformer block output:")
+
+for row in outputs:
+    print(row)
+
+output_gradient = [
+    [0.1, -0.2, 0.3, 0.4],
+    [-0.5, 0.2, 0.1, -0.3],
+    [0.6, -0.1, 0.5, -0.4],
+]
+
+input_gradient = transformer_block.backward(
+    output_gradient
+)
+
+print("\nTransformer block input gradient:")
+
+for row in input_gradient:
+    print(row)
+
+print(
+    "\nFirst LayerNorm gamma gradient:",
+    transformer_block.first_layer_norm.gamma_gradient,
+)
+
+print(
+    "First LayerNorm beta gradient:",
+    transformer_block.first_layer_norm.beta_gradient,
+)
+
+print(
+    "Second LayerNorm gamma gradient:",
+    transformer_block.second_layer_norm.gamma_gradient,
+)
+
+print(
+    "Second LayerNorm beta gradient:",
+    transformer_block.second_layer_norm.beta_gradient,
+)
+
+transformer_block.update_parameters(
+    learning_rate=0.001
+)
+
+print(
+    "\nUpdated first LayerNorm gamma:",
+    transformer_block.first_layer_norm.gamma,
+)
+
+print(
+    "Updated first LayerNorm beta:",
+    transformer_block.first_layer_norm.beta,
+)
