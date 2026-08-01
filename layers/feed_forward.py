@@ -96,21 +96,24 @@ class FeedForwardNetwork:
 
     def update_parameters(self, learning_rate: float) -> None:
         if learning_rate <= 0.0:
-            raise ValueError("Learning rate must be positive.")
-
+            raise ValueError("learning_rate must be positive.")
         if self.first_weights_gradient is None:
-            raise RuntimeError("Backward must be called before updating parameters.")
+            raise RuntimeError("backward() must be called before update_parameters().")
 
         for row in range(self.embedding_dimension):
             for column in range(self.hidden_dimension):
-                self.first_weights[row][column] -= (learning_rate * self.first_weights_gradient[row][column])
+                self.first_weights[row][column] -= (
+                        learning_rate * self.first_weights_gradient[row][column]
+                )
 
         for index in range(self.hidden_dimension):
             self.first_bias[index] -= learning_rate * self.first_bias_gradient[index]
 
         for row in range(self.hidden_dimension):
             for column in range(self.embedding_dimension):
-                self.second_weights[row][column] -= (learning_rate * self.second_weights_gradient[row][column])
+                self.second_weights[row][column] -= (
+                        learning_rate * self.second_weights_gradient[row][column]
+                )
 
         for index in range(self.embedding_dimension):
             self.second_bias[index] -= learning_rate * self.second_bias_gradient[index]

@@ -122,8 +122,10 @@ class LayerNormalization:
 
     def update_parameters(self, learning_rate: float) -> None:
         if learning_rate <= 0.0:
-            raise ValueError("Learning rate must be positive.")
+            raise ValueError("learning_rate must be positive.")
+        if self.gamma_gradient is None or self.beta_gradient is None:
+            raise RuntimeError("backward() must be called before update_parameters().")
 
         for index in range(self.embedding_dimension):
-            self.gamma[index] -= (learning_rate * self.gamma_gradient[index])
-            self.beta[index] -= (learning_rate * self.beta_gradient[index])
+            self.gamma[index] -= learning_rate * self.gamma_gradient[index]
+            self.beta[index] -= learning_rate * self.beta_gradient[index]

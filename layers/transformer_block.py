@@ -105,16 +105,13 @@ class TransformerBlock:
         input_gradient = self._add_gradients(direct_input_gradient,attention_input_gradient)
         return input_gradient
 
-    def update_parameters(self,learning_rate: float) -> None:
+    def update_parameters(self, learning_rate: float) -> None:
         if learning_rate <= 0.0:
-            raise ValueError("Learning rate must be positive.")
+            raise ValueError("learning_rate must be positive.")
 
         self.attention.update_parameters(learning_rate)
-
         self.first_layer_norm.update_parameters(learning_rate)
-
         self.feed_forward.update_parameters(learning_rate)
-
         self.second_layer_norm.update_parameters(learning_rate)
 
 

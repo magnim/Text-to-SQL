@@ -161,15 +161,17 @@ class BPETrainer:
         return tokens
 
     def _build_vocab(self) -> None:
-        """
-        Build the vocabulary from the learned merge rules.
-        """
-        self.vocab ['<PAD>'] = 0
-        self.vocab ['<UNK>'] = 1
+        self.vocab["<PAD>"] = 0
+        self.vocab["<UNK>"] = 1
+        self.vocab["<BOS>"] = 2
+        self.vocab["<EOS>"] = 3
+        self.vocab[" "] = 4
+
         for word in self.words:
             for char in word:
                 if char not in self.vocab:
                     self.vocab[char] = len(self.vocab)
+
         for left, right in self.merge_rules:
             merged_token = left + right
 
@@ -188,3 +190,27 @@ class BPETrainer:
             else:
                 ids.append(self.vocab["<UNK>"])
         return ids
+
+    def decode_ids(self, token_ids: list[int]) -> str:
+        id_to_token = {
+            token_id: token
+            for token, token_id in self.vocab.items()
+        }
+
+        decoded_tokens = []
+
+        for token_id in token_ids:
+            token = id_to_token.get(token_id, "<UNK>")
+
+            if token == "<BOS>":
+                continue
+
+            if token == "<EOS>":
+                break
+
+            if token == "<PAD>":
+                continue
+
+            decoded_tokens.append(token)
+
+        return "".join(decoded_tokens)

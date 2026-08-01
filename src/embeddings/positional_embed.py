@@ -30,22 +30,31 @@ class PositionalEmbedding:
         if self.last_positions is None:
             raise RuntimeError("forward() must be called before backward().")
 
-    def backward(self, output_gradient):
+    def backward(self, output_gradients: list[list[float]]) -> None:
+        if self.last_positions is None:
+            raise RuntimeError("forward() must be called before backward().")
 
-        self._validate_backward()
+        if len(output_gradients) != len(self.last_positions):
+            raise ValueError("Gradient sequence length must match the used positions.")
 
-        if len(output_gradient) != len(self.last_positions):
-            raise ValueError("Gradient length does not match sequence length.")
+        for row in output_gradients:
+            if len(row) != self.embedding_dimension:
+                raise ValueError(f"Each positional gradient must contain {self.embedding_dimension} values.")
 
-        self.position_gradients = [gradient.copy() for gradient in output_gradient]
+        self.position_gradients = [[0.0 for _ in range(self.embedding_dimension)] for _ in range(self.max_sequence_length)]
 
-        return [gradient.copy() for gradient in output_gradient]
+        for gradient_index, position in enumerate(self.last_positions):
+            for dimension in range(self.embedding_dimension):
+                self.position_gradients[position][dimension] += (output_gradients[gradient_index][dimension])
 
-    def update_parameters(self, learning_rate):
-
+    def update_parameters(self, learning_rate: float) -> None:
+        if learning_rate <= 0.0:
+            raise ValueError("learning_rate must be positive.")
         if self.position_gradients is None:
-            raise RuntimeError("backward() must be called before update.")
+            raise RuntimeError("backward() must be called before update_parameters().")
 
-        for row_index, position in enumerate(self.last_positions):
-            for column in range(self.embedding_dimension):
-                self.position_matrix[position][column] -= (learning_rate * self.position_gradients[row_index][column])
+        for position in self.last_positions:
+            for dimension in range(self.embedding_dimension):
+                self.position_matrix[position][dimension] -= (
+                        learning_rate * self.position_gradients[position][dimension]
+                )

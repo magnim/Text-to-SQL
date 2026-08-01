@@ -246,26 +246,32 @@ class MultiHeadSelfAttention:
         return final_input_gradient
 
     def update_parameters(self, learning_rate: float) -> None:
-        """Apply gradient descent to every head and output projection."""
-        if not isinstance(learning_rate, (int, float)):
-            raise TypeError("learning_rate must be numeric.")
+        if learning_rate <= 0.0:
+            raise ValueError("learning_rate must be positive.")
 
-        if learning_rate < 0:
-            raise ValueError("learning_rate cannot be negative.")
-
-        if self.output_projection_gradient is None or self.output_bias_gradient is None:
+        if self.output_projection_gradient is None:
             raise RuntimeError(
-                "backward() must be called before update_parameters().")
+                "backward() must be called before update_parameters()."
+            )
 
+        # Update every attention head
         for head in self.heads:
             head.update_parameters(learning_rate)
 
+        # Update output projection weights
         for input_feature in range(self.embedding_dim):
             for output_feature in range(self.embedding_dim):
-                self.output_projection[input_feature][output_feature] -= (learning_rate * self.output_projection_gradient[input_feature][output_feature])
+                self.output_projection[input_feature][output_feature] -= (
+                        learning_rate
+                        * self.output_projection_gradient[input_feature][output_feature]
+                )
 
-        for feature_index in range(self.embedding_dim):
-            self.output_bias[feature_index] -= (learning_rate * self.output_bias_gradient[feature_index])
+        # Update output bias
+        for output_feature in range(self.embedding_dim):
+            self.output_bias[output_feature] -= (
+                    learning_rate
+                    * self.output_bias_gradient[output_feature]
+            )
 
 
 if __name__ == "__main__":
