@@ -1,72 +1,75 @@
+from models.tiny_gpt import TinyGPT
 from src.tokenizer.bpe import BPETrainer
-from layers.linear import Linear
-from models.tiny_model import TinyModel
+from training.train_tiny_gpt import train_tiny_gpt
 
-words = ["low", "lower", "lowest", "low", "lower"]
+corpus = [
+    "the cat sat on the mat",
+    "the dog sat on the rug",
+    "the cat slept on the rug",
+    "the dog slept on the mat",
+]
 
-trainer = BPETrainer(words)
+training_words = []
 
-print("Initial Corpus:")
-print(trainer.corpus)
+for sentence in corpus:
+    training_words.extend(sentence.split())
 
-trainer.train(3)
+tokenizer = BPETrainer(training_words)
+tokenizer.train(num_merges=20)
 
-print("\nCorpus After 3 Merges:")
-print(trainer.corpus)
+encoded_sequences = []
 
-print("\nMerge Rules:")
-print(trainer.merge_rules)
+for sentence in corpus:
+    sentence_ids = tokenizer.encode_ids(sentence)
 
+    complete_ids = (
+        [tokenizer.vocab["<BOS>"]]
+        + sentence_ids
+        + [tokenizer.vocab["<EOS>"]]
+    )
 
-print(trainer.vocab)
+    encoded_sequences.append(complete_ids)
 
-print("Tokens:")
-print(trainer.encode("lowest"))
+training_dataset = []
 
-print("\nToken IDs:")
-print(trainer.encode_ids("lowest"))
+for token_ids in encoded_sequences:
+    training_dataset.append({
+        "input_ids": token_ids[:-1],
+        "target_ids": token_ids[1:],
+    })
 
-from src.embeddings.embedding import Embedding
+print(training_dataset)
 
-
-embedding = Embedding(
-    vocab_size=5,
-    embedding_dim=3
+model = TinyGPT(
+    vocabulary_size=len(tokenizer.vocab),
+    embedding_dimension=8,
+    maximum_sequence_length=32,
+    number_of_heads=2,
+    hidden_dimension=16,
+    number_of_layers=2,
 )
 
-print(embedding.embedding_matrix)
-print('#'*20)
-vectors = embedding.forward([0, 2, 4])
+epoch_losses = train_tiny_gpt(model=model,training_dataset=training_dataset,epochs=500,learning_rate=0.005)
 
-print(vectors)
+prompt_ids = [tokenizer.vocab["<BOS>"]] + tokenizer.encode_ids("the")
 
-
-linear = Linear(input_size=2)
-linear.weights = [3, 4]
-linear.bias = 10
-prediction = linear.forward([2, 5])
-
-print(prediction)
-
-
-
-linear.weights = [3, 4]
-linear.bias = 10
-
-print(linear.forward([0, 0]))
-
-
-linear.weights = [0.5, 0.2]
-linear.bias = 0.1
-
-print(linear.forward([2.0, 4.0]))
-
-
-model = TinyModel(
-    vocab_size=3,
-    embedding_dim=2
+generated_ids = model.generate(
+    input_ids=prompt_ids,
+    maximum_new_tokens=20,
+    eos_token_id=tokenizer.vocab["<EOS>"]
 )
 
-prediction = model.forward([0])
+id_to_token = {
+    token_id: token
+    for token, token_id in tokenizer.vocab.items()
+}
 
-print(prediction)
+print("Generated IDs:", generated_ids)
+print(
+    "Generated tokens:",
+    [
+        id_to_token.get(token_id, "<UNKNOWN>")
+        for token_id in generated_ids
+    ]
+)
+print("Generated text:", tokenizer.decode_ids(generated_ids))

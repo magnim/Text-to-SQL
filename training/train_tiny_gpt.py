@@ -1,12 +1,8 @@
 from losses.cross_entropy import CrossEntropyLoss
 from models.tiny_gpt import TinyGPT
 
-def train_tiny_gpt(
-    model: TinyGPT,
-    training_dataset: list[dict[str, list[int]]],
-    epochs: int,
-    learning_rate: float
-) -> list[float]:
+def train_tiny_gpt( model: TinyGPT, training_dataset: list[dict[str, list[int]]],
+                    epochs: int,learning_rate: float) -> list[float]:
     if not training_dataset:
         raise ValueError("training_dataset cannot be empty.")
     if epochs <= 0:

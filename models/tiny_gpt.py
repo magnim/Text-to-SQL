@@ -44,10 +44,7 @@ class TinyGPT:
         position_embeddings = self.position_embedding.forward(len(input_ids))
         self.last_position_embeddings = [row.copy() for row in position_embeddings]
 
-        hidden_states = self._add_embeddings(
-            token_embeddings,
-            position_embeddings
-        )
+        hidden_states = self._add_embeddings(token_embeddings,position_embeddings)
         self.last_combined_embeddings = [row.copy() for row in hidden_states]
 
         for transformer_block in self.transformer_blocks:

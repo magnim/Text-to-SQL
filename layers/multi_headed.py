@@ -273,39 +273,3 @@ class MultiHeadSelfAttention:
                     * self.output_bias_gradient[output_feature]
             )
 
-
-if __name__ == "__main__":
-    random.seed(42)
-
-    attention = MultiHeadSelfAttention(
-        embedding_dim=4,
-        num_heads=2,
-    )
-
-    sample_embeddings = [
-        [0.1, 0.2, 0.3, 0.4],
-        [0.5, 0.6, 0.7, 0.8],
-        [0.9, 1.0, 1.1, 1.2],
-    ]
-
-    attention_output = attention.forward(sample_embeddings)
-
-    print("Multi-head attention output:")
-    for output_row in attention_output:
-        print(output_row)
-
-    sample_output_gradient = [
-        [1.0, 1.0, 1.0, 1.0]
-        for _ in sample_embeddings
-    ]
-
-    input_gradient = attention.backward(
-        sample_output_gradient
-    )
-
-    print("\nInput gradient:")
-    for gradient_row in input_gradient:
-        print(gradient_row)
-
-    attention.update_parameters(learning_rate=0.01)
-    print("\nParameters updated successfully.")

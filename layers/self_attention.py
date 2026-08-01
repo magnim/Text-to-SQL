@@ -299,22 +299,3 @@ class SelfAttention:
         self._update_vector(self.value_bias, self.value_bias_gradient, learning_rate)
 
 
-
-
-if __name__ == "__main__":
-    random.seed(42)
-
-    attention = SelfAttention(embedding_dim=4, attention_dim=2)
-
-    embeddings = [
-        [0.1, 0.2, 0.3, 0.4],
-        [0.5, 0.6, 0.7, 0.8],
-        [0.9, 1.0, 1.1, 1.2],
-    ]
-
-    attention_output = attention.forward(embeddings)
-
-    print("Attention output:")
-
-    for row in attention_output:
-        print(row)
