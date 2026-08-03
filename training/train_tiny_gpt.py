@@ -1,8 +1,10 @@
 from losses.cross_entropy import CrossEntropyLoss
 from models.tiny_gpt import TinyGPT
+from training.dataset import create_mini_batches
+
 
 def train_tiny_gpt( model: TinyGPT, training_dataset: list[dict[str, list[int]]],
-                    epochs: int,learning_rate: float) -> list[float]:
+                    epochs: int,learning_rate: float, batch_size: int) -> list[float]:
     if not training_dataset:
         raise ValueError("training_dataset cannot be empty.")
     if epochs <= 0:
@@ -15,21 +17,26 @@ def train_tiny_gpt( model: TinyGPT, training_dataset: list[dict[str, list[int]]]
 
     for epoch in range(epochs):
         total_loss = 0.0
+        processed_examples = 0
 
-        for example in training_dataset:
-            input_ids = example["input_ids"]
-            target_ids = example["target_ids"]
+        mini_batches = create_mini_batches(training_dataset=training_dataset,batch_size=batch_size)
 
-            logits = model.forward(input_ids)
-            loss = loss_function.forward(logits, target_ids)
-            logits_gradients = loss_function.backward()
+        for batch in mini_batches:
+            for example in batch:
+                input_ids = example["input_ids"]
+                target_ids = example["target_ids"]
 
-            model.backward(logits_gradients)
-            model.update_parameters(learning_rate)
+                logits = model.forward(input_ids)
+                loss = loss_function.forward(logits, target_ids)
+                logits_gradients = loss_function.backward()
 
-            total_loss += loss
+                model.backward(logits_gradients)
+                model.update_parameters(learning_rate)
 
-        average_loss = total_loss / len(training_dataset)
+                total_loss += loss
+                processed_examples += 1
+
+        average_loss = total_loss / processed_examples
         epoch_losses.append(average_loss)
 
         print(

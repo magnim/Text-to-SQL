@@ -80,10 +80,7 @@ class BPETrainer:
 
         return best_pair
 
-    def merge_pair(
-            self,
-            pair_to_merge: tuple[str, str],
-    ) -> None:
+    def merge_pair(self,pair_to_merge: tuple[str, str]) -> None:
         """
         Merge a selected adjacent pair everywhere in the corpus.
 
@@ -116,11 +113,7 @@ class BPETrainer:
             self.merge_pair(best_pair)
         self._build_vocab()
 
-    def _merge_tokens(
-            self,
-            tokens: tuple[str, ...] | list[str],
-            pair_to_merge: tuple[str, str],
-    ) -> list[str]:
+    def _merge_tokens(self,tokens: tuple[str, ...] | list[str],pair_to_merge: tuple[str, str]) -> list[str]:
         """
         Merge a single adjacent pair inside one token sequence.
 
@@ -192,25 +185,15 @@ class BPETrainer:
         return ids
 
     def decode_ids(self, token_ids: list[int]) -> str:
-        id_to_token = {
-            token_id: token
-            for token, token_id in self.vocab.items()
-        }
-
+        id_to_token = {token_id: token for token, token_id in self.vocab.items()}
         decoded_tokens = []
-
         for token_id in token_ids:
             token = id_to_token.get(token_id, "<UNK>")
-
             if token == "<BOS>":
                 continue
-
             if token == "<EOS>":
                 break
-
             if token == "<PAD>":
                 continue
-
             decoded_tokens.append(token)
-
         return "".join(decoded_tokens)

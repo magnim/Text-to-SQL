@@ -1,5 +1,5 @@
 from models.tiny_gpt import TinyGPT
-from src.tokenizer.bpe import BPETrainer
+from training.dataset import build_training_dataset
 from training.train_tiny_gpt import train_tiny_gpt
 
 corpus = [
@@ -9,34 +9,14 @@ corpus = [
     "the dog slept on the mat",
 ]
 
-training_words = []
-
-for sentence in corpus:
-    training_words.extend(sentence.split())
-
-tokenizer = BPETrainer(training_words)
-tokenizer.train(num_merges=20)
-
-encoded_sequences = []
-
-for sentence in corpus:
-    sentence_ids = tokenizer.encode_ids(sentence)
-
-    complete_ids = (
-        [tokenizer.vocab["<BOS>"]]
-        + sentence_ids
-        + [tokenizer.vocab["<EOS>"]]
+tokenizer, training_dataset = (
+    build_training_dataset(
+        corpus=corpus,
+        num_merges=20,
+        window_size=13,
+        stride=6,
     )
-
-    encoded_sequences.append(complete_ids)
-
-training_dataset = []
-
-for token_ids in encoded_sequences:
-    training_dataset.append({
-        "input_ids": token_ids[:-1],
-        "target_ids": token_ids[1:],
-    })
+)
 
 print(training_dataset)
 
@@ -49,7 +29,7 @@ model = TinyGPT(
     number_of_layers=2,
 )
 
-epoch_losses = train_tiny_gpt(model=model,training_dataset=training_dataset,epochs=500,learning_rate=0.005)
+epoch_losses = train_tiny_gpt(model=model,training_dataset=training_dataset,epochs=500,learning_rate=0.005,batch_size=2)
 
 prompt_ids = [tokenizer.vocab["<BOS>"]] + tokenizer.encode_ids("the")
 
