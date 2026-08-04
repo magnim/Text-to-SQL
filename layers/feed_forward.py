@@ -1,5 +1,6 @@
 import random
 from utils.matrix import matrix_multiply, transpose
+from optimizers.adam import Adam
 
 
 class FeedForwardNetwork:
@@ -19,6 +20,16 @@ class FeedForwardNetwork:
         self.second_weights = self._initialize_matrix(hidden_dimension,embedding_dimension)
         self.second_bias = [0.0] * embedding_dimension
 
+        self.optimizer = Adam()
+        self.first_weights_first_moment = [[0.0 for _ in range(hidden_dimension)] for _ in range(embedding_dimension)]
+        self.first_weights_second_moment = [[0.0 for _ in range(hidden_dimension)] for _ in range(embedding_dimension)]
+        self.first_bias_first_moment = [0.0 for _ in range(hidden_dimension)]
+        self.first_bias_second_moment = [0.0 for _ in range(hidden_dimension)]
+        self.second_weights_first_moment = [[0.0 for _ in range(embedding_dimension)] for _ in range(hidden_dimension)]
+        self.second_weights_second_moment = [[0.0 for _ in range(embedding_dimension)] for _ in range(hidden_dimension)]
+        self.second_bias_first_moment = [0.0 for _ in range(embedding_dimension)]
+        self.second_bias_second_moment = [0.0 for _ in range(embedding_dimension)]
+
         self.first_weights_gradient = None
         self.first_bias_gradient = None
         self.second_weights_gradient = None
@@ -33,11 +44,17 @@ class FeedForwardNetwork:
         return [[random.uniform(-limit, limit) for _ in range(columns)]for _ in range(rows)]
 
     def _validate_inputs(self, inputs: list[list[float]]) -> None:
+        if not isinstance(inputs, list):
+            raise TypeError("Inputs must be a list.")
         if not inputs:
             raise ValueError("Inputs cannot be empty.")
         for row in inputs:
+            if not isinstance(row, list):
+                raise TypeError("Every input row must be a list.")
             if len(row) != self.embedding_dimension:
                 raise ValueError(f"Each input embedding must have {self.embedding_dimension} values.")
+            if any(not isinstance(value, (int, float)) for value in row):
+                raise TypeError("Every input value must be numeric.")
 
     def _add_bias(self,matrix: list[list[float]],bias: list[float]) -> list[list[float]]:
         return [[value + bias_value for value, bias_value in zip(row, bias)] for row in matrix]
@@ -50,7 +67,7 @@ class FeedForwardNetwork:
 
     def forward(self,inputs: list[list[float]],) -> list[list[float]]:
         self._validate_inputs(inputs)
-        self.last_inputs = inputs
+        self.last_inputs = [row.copy() for row in inputs]
         first_projection = matrix_multiply(inputs, self.first_weights)
         self.last_first_projection = self._add_bias(first_projection, self.first_bias)
         self.last_activated = self._relu(self.last_first_projection)
@@ -69,6 +86,11 @@ class FeedForwardNetwork:
         return input_gradient, weights_gradient, bias_gradient
 
     def _validate_output_gradient(self,output_gradient: list[list[float]]) -> None:
+        if self.last_output is None:
+            raise RuntimeError("forward() must be called before backward().")
+
+        if not isinstance(output_gradient, list):
+            raise TypeError("Output gradient must be a list.")
         if not output_gradient:
             raise ValueError("Output gradient cannot be empty.")
 
@@ -79,12 +101,18 @@ class FeedForwardNetwork:
             raise ValueError("Output gradient must match the output sequence length.")
 
         for row in output_gradient:
+            if not isinstance(row, list):
+                raise TypeError("Every output-gradient row must be a list.")
             if len(row) != self.embedding_dimension:
                 raise ValueError(f"Each output-gradient row must have {self.embedding_dimension} values.")
+            if any(not isinstance(value, (int, float)) for value in row):
+                raise TypeError("Every gradient value must be numeric.")
 
 
     def backward(self, output_gradient: list[list[float]]) -> list[list[float]]:
         self._validate_output_gradient(output_gradient)
+        if self.last_inputs is None or self.last_first_projection is None or self.last_activated is None:
+            raise RuntimeError("Required forward values are missing.")
 
         activated_gradient, self.second_weights_gradient, self.second_bias_gradient = (self._linear_backward(output_gradient,self.last_activated,self.second_weights))
 
@@ -97,23 +125,57 @@ class FeedForwardNetwork:
     def update_parameters(self, learning_rate: float) -> None:
         if learning_rate <= 0.0:
             raise ValueError("learning_rate must be positive.")
-        if self.first_weights_gradient is None:
+        if self.first_weights_gradient is None or self.first_bias_gradient is None or self.second_weights_gradient is None or self.second_bias_gradient is None:
             raise RuntimeError("backward() must be called before update_parameters().")
 
-        for row in range(self.embedding_dimension):
-            for column in range(self.hidden_dimension):
-                self.first_weights[row][column] -= (
-                        learning_rate * self.first_weights_gradient[row][column]
-                )
+        self.optimizer.learning_rate = learning_rate
+        self.optimizer.start_step()
 
-        for index in range(self.hidden_dimension):
-            self.first_bias[index] -= learning_rate * self.first_bias_gradient[index]
+        (
+            self.first_weights,
+            self.first_weights_first_moment,
+            self.first_weights_second_moment,
+        ) = self.optimizer.update(
+            parameter=self.first_weights,
+            gradient=self.first_weights_gradient,
+            first_moment=self.first_weights_first_moment,
+            second_moment=self.first_weights_second_moment,
+        )
 
-        for row in range(self.hidden_dimension):
-            for column in range(self.embedding_dimension):
-                self.second_weights[row][column] -= (
-                        learning_rate * self.second_weights_gradient[row][column]
-                )
+        (
+            self.first_bias,
+            self.first_bias_first_moment,
+            self.first_bias_second_moment,
+        ) = self.optimizer.update(
+            parameter=self.first_bias,
+            gradient=self.first_bias_gradient,
+            first_moment=self.first_bias_first_moment,
+            second_moment=self.first_bias_second_moment,
+        )
 
-        for index in range(self.embedding_dimension):
-            self.second_bias[index] -= learning_rate * self.second_bias_gradient[index]
+        (
+            self.second_weights,
+            self.second_weights_first_moment,
+            self.second_weights_second_moment,
+        ) = self.optimizer.update(
+            parameter=self.second_weights,
+            gradient=self.second_weights_gradient,
+            first_moment=self.second_weights_first_moment,
+            second_moment=self.second_weights_second_moment,
+        )
+
+        (
+            self.second_bias,
+            self.second_bias_first_moment,
+            self.second_bias_second_moment,
+        ) = self.optimizer.update(
+            parameter=self.second_bias,
+            gradient=self.second_bias_gradient,
+            first_moment=self.second_bias_first_moment,
+            second_moment=self.second_bias_second_moment,
+        )
+
+        self.first_weights_gradient = None
+        self.first_bias_gradient = None
+        self.second_weights_gradient = None
+        self.second_bias_gradient = None

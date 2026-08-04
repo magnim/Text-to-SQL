@@ -1,3 +1,5 @@
+from optimizers.adam import Adam
+
 class LayerNormalization:
     def __init__(self, embedding_dimension: int, epsilon: float = 1e-5) -> None:
         if embedding_dimension <= 0:
@@ -22,13 +24,27 @@ class LayerNormalization:
         self.gamma_gradient = None
         self.beta_gradient = None
 
-    def _validate_inputs(self, inputs: list[list[float]]) -> None:
+        self.optimizer = Adam()
+
+        self.gamma_first_moment = [0.0 for _ in range(embedding_dimension)]
+        self.gamma_second_moment = [0.0 for _ in range(embedding_dimension)]
+        self.beta_first_moment = [0.0 for _ in range(embedding_dimension)]
+        self.beta_second_moment = [0.0 for _ in range(embedding_dimension)]
+
+    def _validate_inputs(self,inputs: list[list[float]]) -> None:
+        if not isinstance(inputs, list):
+            raise TypeError("Inputs must be a list.")
+
         if not inputs:
             raise ValueError("Inputs cannot be empty.")
 
         for row in inputs:
+            if not isinstance(row, list):
+                raise TypeError("Every input row must be a list.")
             if len(row) != self.embedding_dimension:
                 raise ValueError(f"Each input row must contain {self.embedding_dimension} values.")
+            if any(not isinstance(value, (int, float))for value in row):
+                raise TypeError("Every input value must be numeric.")
 
     def _calculate_mean(self, values: list[float]) -> float:
         return sum(values) / len(values)
@@ -49,7 +65,7 @@ class LayerNormalization:
 
     def forward(self, inputs: list[list[float]], ) -> list[list[float]]:
         self._validate_inputs(inputs)
-        self.last_inputs = inputs
+        self.last_inputs = [row.copy() for row in inputs]
 
         means = []
         variances = []
@@ -90,26 +106,31 @@ class LayerNormalization:
 
         return input_gradient
 
-    def _normalize_backward(self, output_gradient: list[list[float]], ) -> list[list[float]]:
+    def _normalize_backward(self,output_gradient: list[list[float]]) -> list[list[float]]:
         input_gradients = []
 
-        for (gradient_row, normalized_row, inverse_standard_deviation) in zip(output_gradient,
-                                                                              self.last_normalized_inputs,
-                                                                              self.last_inverse_standard_deviations):
+        for (gradient_row,normalized_row,inverse_standard_deviation) in zip(output_gradient,self.last_normalized_inputs,self.last_inverse_standard_deviations):
             feature_count = self.embedding_dimension
-            sum_gradient = sum(gradient_row)
-            sum_gradient_times_normalized = sum(
-                gradient * normalized for gradient, normalized in zip(gradient_row, normalized_row))
+
+            normalized_gradients = [gradient * gamma for gradient, gamma in zip(gradient_row,self.gamma)]
+            sum_normalized_gradients = sum(normalized_gradients)
+            sum_gradient_times_normalized = sum(gradient * normalized
+                                                for gradient, normalized in zip(normalized_gradients,normalized_row))
             input_gradient = []
-            for (gradient, normalized, gamma) in zip(gradient_row, normalized_row, self.gamma):
-                value = (gamma * inverse_standard_deviation / feature_count) * (
-                            feature_count * gradient - sum_gradient - normalized * sum_gradient_times_normalized)
+            for gradient, normalized in zip(normalized_gradients,normalized_row,):
+                value = ((inverse_standard_deviation/ feature_count) *
+                         (feature_count * gradient - sum_normalized_gradients - normalized * sum_gradient_times_normalized))
                 input_gradient.append(value)
             input_gradients.append(input_gradient)
-
         return input_gradients
 
-    def _validate_output_gradient(self, output_gradient: list[list[float]]) -> None:
+    def _validate_output_gradient(self,output_gradient: list[list[float]]) -> None:
+        if self.last_output is None:
+            raise RuntimeError("forward() must be called before backward().")
+
+        if not isinstance(output_gradient, list):
+            raise TypeError("Output gradient must be a list.")
+
         if not output_gradient:
             raise ValueError("Output gradient cannot be empty.")
 
@@ -117,8 +138,14 @@ class LayerNormalization:
             raise ValueError("Gradient shape does not match output.")
 
         for row in output_gradient:
+            if not isinstance(row, list):
+                raise TypeError("Every gradient row must be a list.")
+
             if len(row) != self.embedding_dimension:
                 raise ValueError(f"Each gradient row must contain {self.embedding_dimension} values.")
+
+            if any(not isinstance(value, (int, float)) for value in row):
+                raise TypeError("Every gradient value must be numeric.")
 
     def update_parameters(self, learning_rate: float) -> None:
         if learning_rate <= 0.0:
@@ -126,6 +153,18 @@ class LayerNormalization:
         if self.gamma_gradient is None or self.beta_gradient is None:
             raise RuntimeError("backward() must be called before update_parameters().")
 
-        for index in range(self.embedding_dimension):
-            self.gamma[index] -= learning_rate * self.gamma_gradient[index]
-            self.beta[index] -= learning_rate * self.beta_gradient[index]
+        self.optimizer.learning_rate = learning_rate
+        self.optimizer.start_step()
+
+        (self.gamma,self.gamma_first_moment,self.gamma_second_moment) = self.optimizer.update(parameter=self.gamma,
+                                                                                              gradient=self.gamma_gradient,
+                                                                                              first_moment=self.gamma_first_moment,
+                                                                                              second_moment=self.gamma_second_moment)
+
+        (self.beta,self.beta_first_moment,self.beta_second_moment) = self.optimizer.update(parameter=self.beta,
+                                                                                           gradient=self.beta_gradient,
+                                                                                           first_moment=self.beta_first_moment,
+                                                                                           second_moment=self.beta_second_moment)
+
+        self.gamma_gradient = None
+        self.beta_gradient = None

@@ -1,6 +1,6 @@
 import math
 import random
-
+from optimizers.adam import Adam
 from utils.matrix import matrix_add, matrix_multiply, transpose
 
 
@@ -22,6 +22,20 @@ class SelfAttention:
         self.query_bias = self._initialize_bias()
         self.key_bias = self._initialize_bias()
         self.value_bias = self._initialize_bias()
+
+        self.optimizer = Adam()
+        self.query_projection_first_moment = [[0.0 for _ in range(self.attention_dim)] for _ in range(self.embedding_dim)]
+        self.query_projection_second_moment = [[0.0 for _ in range(self.attention_dim)] for _ in range(self.embedding_dim)]
+        self.key_projection_first_moment = [[0.0 for _ in range(self.attention_dim)] for _ in range(self.embedding_dim)]
+        self.key_projection_second_moment = [[0.0 for _ in range(self.attention_dim)] for _ in range(self.embedding_dim)]
+        self.value_projection_first_moment = [[0.0 for _ in range(self.attention_dim)] for _ in range(self.embedding_dim)]
+        self.value_projection_second_moment = [[0.0 for _ in range(self.attention_dim)] for _ in range(self.embedding_dim)]
+        self.query_bias_first_moment = [0.0 for _ in range(self.attention_dim)]
+        self.query_bias_second_moment = [0.0 for _ in range(self.attention_dim)]
+        self.key_bias_first_moment = [0.0 for _ in range(self.attention_dim)]
+        self.key_bias_second_moment = [0.0 for _ in range(self.attention_dim)]
+        self.value_bias_first_moment = [0.0 for _ in range(self.attention_dim)]
+        self.value_bias_second_moment = [0.0 for _ in range(self.attention_dim)]
 
         self.query_projection_gradient = None
         self.key_projection_gradient = None
@@ -64,7 +78,6 @@ class SelfAttention:
 
     def _validate_output_gradient(self, output_gradient: list[list[float]]) -> None:
         if self.last_attention_output is None:
-            print('*')
             raise RuntimeError("Forward must be called before backward.")
 
         if len(output_gradient) != len(self.last_attention_output):
@@ -133,7 +146,7 @@ class SelfAttention:
 
     def forward(self, embeddings: list[list[float]]) -> list[list[float]]:
         self._validate_embeddings(embeddings)
-        self.last_embeddings = embeddings
+        self.last_embeddings = [row.copy() for row in embeddings]
 
         queries = matrix_multiply(embeddings, self.query_projection)
         self.last_queries = self._add_bias(queries, self.query_bias)
@@ -157,7 +170,6 @@ class SelfAttention:
 
     def _attention_output_backward(self,output_gradient: list[list[float]]) -> tuple[list[list[float]], list[list[float]]]:
         if self.last_attention_weights is None or self.last_values is None:
-            print('**')
             raise RuntimeError("Forward must be called before backward.")
 
         attention_weights_gradient = matrix_multiply(output_gradient, transpose(self.last_values))
@@ -181,7 +193,6 @@ class SelfAttention:
 
     def _attention_weights_backward(self,attention_weights_gradient: list[list[float]]) -> list[list[float]]:
         if self.last_attention_weights is None:
-            print('***')
             raise RuntimeError("Forward must be called before backward.")
 
         scaled_scores_gradient = []
@@ -204,7 +215,6 @@ class SelfAttention:
         scores_gradient: list[list[float]],
     ) -> tuple[list[list[float]], list[list[float]]]:
         if self.last_queries is None or self.last_keys is None:
-            print('****')
             raise RuntimeError("Forward must be called before backward.")
 
         queries_gradient = matrix_multiply(scores_gradient, self.last_keys)
@@ -214,7 +224,6 @@ class SelfAttention:
 
     def _projection_backward(self,output_gradient: list[list[float]],weights: list[list[float]],) -> tuple[list[list[float]], list[list[float]], list[float]]:
         if self.last_embeddings is None:
-            print('*****')
             raise RuntimeError("Forward must be called before backward.")
 
         input_gradient = matrix_multiply(output_gradient, transpose(weights))
@@ -280,22 +289,91 @@ class SelfAttention:
         for index in range(len(vector)):
             vector[index] -= learning_rate * gradient[index]
 
-    def update_parameters(self, learning_rate: float) -> None:
-        if learning_rate < 0:
-            raise ValueError("learning_rate cannot be negative.")
+    def update_parameters(self,learning_rate: float) -> None:
+        if learning_rate <= 0.0:
+            raise ValueError("learning_rate must be positive.")
 
         gradients = [self.query_projection_gradient,self.key_projection_gradient,self.value_projection_gradient,
                      self.query_bias_gradient,self.key_bias_gradient,self.value_bias_gradient]
 
         if any(gradient is None for gradient in gradients):
-            raise RuntimeError("Backward must be called before updating parameters.")
+            raise RuntimeError("backward() must be called before update_parameters().")
 
-        self._update_matrix(self.query_projection, self.query_projection_gradient, learning_rate)
-        self._update_matrix(self.key_projection, self.key_projection_gradient, learning_rate)
-        self._update_matrix(self.value_projection, self.value_projection_gradient, learning_rate)
+        self.optimizer.learning_rate = learning_rate
+        self.optimizer.start_step()
 
-        self._update_vector(self.query_bias, self.query_bias_gradient, learning_rate)
-        self._update_vector(self.key_bias, self.key_bias_gradient, learning_rate)
-        self._update_vector(self.value_bias, self.value_bias_gradient, learning_rate)
+        (
+            self.query_projection,
+            self.query_projection_first_moment,
+            self.query_projection_second_moment,
+        ) = self.optimizer.update(
+            parameter=self.query_projection,
+            gradient=self.query_projection_gradient,
+            first_moment=self.query_projection_first_moment,
+            second_moment=self.query_projection_second_moment,
+        )
+
+        (
+            self.key_projection,
+            self.key_projection_first_moment,
+            self.key_projection_second_moment,
+        ) = self.optimizer.update(
+            parameter=self.key_projection,
+            gradient=self.key_projection_gradient,
+            first_moment=self.key_projection_first_moment,
+            second_moment=self.key_projection_second_moment,
+        )
+
+        (
+            self.value_projection,
+            self.value_projection_first_moment,
+            self.value_projection_second_moment,
+        ) = self.optimizer.update(
+            parameter=self.value_projection,
+            gradient=self.value_projection_gradient,
+            first_moment=self.value_projection_first_moment,
+            second_moment=self.value_projection_second_moment,
+        )
+
+        (
+            self.query_bias,
+            self.query_bias_first_moment,
+            self.query_bias_second_moment,
+        ) = self.optimizer.update(
+            parameter=self.query_bias,
+            gradient=self.query_bias_gradient,
+            first_moment=self.query_bias_first_moment,
+            second_moment=self.query_bias_second_moment,
+        )
+
+        (
+            self.key_bias,
+            self.key_bias_first_moment,
+            self.key_bias_second_moment,
+        ) = self.optimizer.update(
+            parameter=self.key_bias,
+            gradient=self.key_bias_gradient,
+            first_moment=self.key_bias_first_moment,
+            second_moment=self.key_bias_second_moment,
+        )
+
+        (
+            self.value_bias,
+            self.value_bias_first_moment,
+            self.value_bias_second_moment,
+        ) = self.optimizer.update(
+            parameter=self.value_bias,
+            gradient=self.value_bias_gradient,
+            first_moment=self.value_bias_first_moment,
+            second_moment=self.value_bias_second_moment,
+        )
+
+        self.query_projection_gradient = None
+        self.key_projection_gradient = None
+        self.value_projection_gradient = None
+
+        self.query_bias_gradient = None
+        self.key_bias_gradient = None
+        self.value_bias_gradient = None
 
 

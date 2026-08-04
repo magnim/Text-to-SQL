@@ -2,6 +2,7 @@ import math
 import random
 
 from layers.self_attention import SelfAttention
+from optimizers.adam import Adam
 
 
 class MultiHeadSelfAttention:
@@ -43,6 +44,12 @@ class MultiHeadSelfAttention:
         self.output_projection = self._initialize_output_projection()
         self.output_bias = [0.0 for _ in range(self.embedding_dim)]
 
+        self.optimizer = Adam()
+        self.output_projection_first_moment = [[0.0 for _ in range(self.embedding_dim)]for _ in range(self.embedding_dim)]
+        self.output_projection_second_moment = [[0.0 for _ in range(self.embedding_dim)]for _ in range(self.embedding_dim)]
+        self.output_bias_first_moment = [0.0 for _ in range(self.embedding_dim)]
+        self.output_bias_second_moment = [0.0 for _ in range(self.embedding_dim)]
+
         self.output_projection_gradient = None
         self.output_bias_gradient = None
         self.last_concatenated_output = None
@@ -62,14 +69,10 @@ class MultiHeadSelfAttention:
 
     def _validate_embeddings(self,embeddings: list[list[float]],) -> None:
         if not isinstance(embeddings, list):
-            raise TypeError(
-                "embeddings must be a list of token embeddings."
-            )
+            raise TypeError("embeddings must be a list of token embeddings.")
 
         if not embeddings:
-            raise ValueError(
-                "embeddings must contain at least one token."
-            )
+            raise ValueError("embeddings must contain at least one token.")
 
         for token_index, token_embedding in enumerate(embeddings):
             if not isinstance(token_embedding, list):
@@ -167,7 +170,7 @@ class MultiHeadSelfAttention:
             head_outputs.append(head_output)
 
         concatenated_output = self._concatenate_head_outputs(head_outputs)
-        self.last_concatenated_output = concatenated_output
+        self.last_concatenated_output = [row.copy() for row in concatenated_output]
         self.last_output = self._apply_output_projection(concatenated_output)
 
         return self.last_output
@@ -249,27 +252,28 @@ class MultiHeadSelfAttention:
         if learning_rate <= 0.0:
             raise ValueError("learning_rate must be positive.")
 
-        if self.output_projection_gradient is None:
-            raise RuntimeError(
-                "backward() must be called before update_parameters()."
-            )
+        if self.output_projection_gradient is None or self.output_bias_gradient is None:
+            raise RuntimeError("backward() must be called before update_parameters().")
 
         # Update every attention head
         for head in self.heads:
             head.update_parameters(learning_rate)
 
-        # Update output projection weights
-        for input_feature in range(self.embedding_dim):
-            for output_feature in range(self.embedding_dim):
-                self.output_projection[input_feature][output_feature] -= (
-                        learning_rate
-                        * self.output_projection_gradient[input_feature][output_feature]
-                )
+        self.optimizer.learning_rate = learning_rate
+        self.optimizer.start_step()
 
-        # Update output bias
-        for output_feature in range(self.embedding_dim):
-            self.output_bias[output_feature] -= (
-                    learning_rate
-                    * self.output_bias_gradient[output_feature]
-            )
+        (self.output_projection,self.output_projection_first_moment,self.output_projection_second_moment
+        ) = self.optimizer.update(
+            parameter=self.output_projection,
+            gradient=self.output_projection_gradient,
+            first_moment=self.output_projection_first_moment,
+            second_moment=self.output_projection_second_moment,
+        )
 
+        self.output_bias,self.output_bias_first_moment,self.output_bias_second_moment = self.optimizer.update(parameter=self.output_bias,
+                                                                                                              gradient=self.output_bias_gradient,
+                                                                                                              first_moment=self.output_bias_first_moment,
+                                                                                                              second_moment=self.output_bias_second_moment)
+
+        self.output_projection_gradient = None
+        self.output_bias_gradient = None

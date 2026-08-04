@@ -48,8 +48,12 @@ class TransformerBlock:
         if not inputs:
             raise ValueError("Inputs cannot be empty.")
         for row in inputs:
+            if not isinstance(row, list):
+                raise TypeError("Every input row must be a list.")
             if len(row) != self.embedding_dimension:
                 raise ValueError(f"Each input row must contain {self.embedding_dimension} values.")
+            if any(not isinstance(value, (int, float)) for value in row):
+                raise TypeError("Every input value must be numeric.")
 
     def _add_gradients(self,first_gradient: list[list[float]],second_gradient: list[list[float]]) -> list[list[float]]:
         if len(first_gradient) != len(second_gradient):
@@ -68,6 +72,8 @@ class TransformerBlock:
 
         if not output_gradient:
             raise ValueError("Output gradient cannot be empty.")
+        if not isinstance(output_gradient, list):
+            raise TypeError("Output gradient must be a list.")
 
         if len(output_gradient) != len(self.last_output):
             raise ValueError("Output gradient must have the same number of rows as the block output.")
@@ -75,6 +81,11 @@ class TransformerBlock:
         for gradient_row, output_row in zip(output_gradient,self.last_output):
             if len(gradient_row) != len(output_row):
                 raise ValueError("Output gradient must have the same shape as the block output.")
+            if not isinstance(gradient_row, list):
+                raise TypeError("Every gradient row must be a list.")
+
+            if any(not isinstance(value, (int, float)) for value in gradient_row):
+                raise TypeError("Every gradient value must be numeric.")
 
     def forward(self,inputs: list[list[float]]) -> list[list[float]]:
         self._validate_inputs(inputs)

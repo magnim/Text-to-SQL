@@ -114,6 +114,8 @@ class TinyGPT:
             raise RuntimeError("forward() must be called before backward().")
         if not isinstance(logits_gradients, list):
             raise TypeError("logits_gradients must be a list.")
+        if not logits_gradients:
+            raise ValueError("logits_gradients cannot be empty.")
         if len(logits_gradients) != len(self.last_logits):
             raise ValueError(
                 "Gradient sequence length must match the logits sequence length."
@@ -134,6 +136,18 @@ class TinyGPT:
 
     def _validate_configuration(self,vocabulary_size: int,embedding_dimension: int,maximum_sequence_length: int,
                                 number_of_heads: int,hidden_dimension: int,number_of_layers: int) -> None:
+        configuration_values = {
+            "vocabulary_size": vocabulary_size,
+            "embedding_dimension": embedding_dimension,
+            "maximum_sequence_length": maximum_sequence_length,
+            "number_of_heads": number_of_heads,
+            "hidden_dimension": hidden_dimension,
+            "number_of_layers": number_of_layers,
+        }
+
+        for name, value in configuration_values.items():
+            if not isinstance(value, int):
+                raise TypeError(f"{name} must be an integer.")
         if vocabulary_size <= 0:
             raise ValueError("vocabulary_size must be positive.")
         if embedding_dimension <= 0:
@@ -147,9 +161,7 @@ class TinyGPT:
         if number_of_layers <= 0:
             raise ValueError("number_of_layers must be positive.")
         if embedding_dimension % number_of_heads != 0:
-            raise ValueError(
-                "embedding_dimension must be divisible by number_of_heads."
-            )
+            raise ValueError("embedding_dimension must be divisible by number_of_heads.")
 
     def update_parameters(self, learning_rate: float) -> None:
         if learning_rate <= 0.0:
@@ -168,6 +180,10 @@ class TinyGPT:
 
         if not values:
             raise ValueError("values cannot be empty.")
+        if not isinstance(values, list):
+            raise TypeError("values must be a list.")
+        if any(not isinstance(value, (int, float)) for value in values):
+            raise TypeError("Every value must be numeric.")
         best_index = 0
         for index in range(1,len(values)):
             if values[index] > values[best_index]:
@@ -176,17 +192,27 @@ class TinyGPT:
 
     def generate(self,input_ids: list[int],maximum_new_tokens: int,eos_token_id: int | None = None) -> list[int]:
         self._validate_input_ids(input_ids)
+        if not isinstance(maximum_new_tokens, int):
+            raise TypeError("maximum_new_tokens must be an integer.")
+
         if maximum_new_tokens <= 0:
             raise ValueError("maximum_new_tokens must be positive.")
+
+        if eos_token_id is not None:
+            if not isinstance(eos_token_id, int):
+                raise TypeError("eos_token_id must be an integer or None.")
+
+            if eos_token_id < 0 or eos_token_id >= self.vocabulary_size:
+                raise ValueError("eos_token_id is outside the vocabulary range.")
         generated_ids = input_ids.copy()
         for _ in range(maximum_new_tokens):
+            if len(generated_ids) >= self.maximum_sequence_length:
+                break
             logits = self.forward(generated_ids)
             last_logits = logits[-1]
             next_token = self._argmax(last_logits)
             generated_ids.append(next_token)
             if eos_token_id is not None and next_token == eos_token_id:
-                break
-            if len(generated_ids)>= self.maximum_sequence_length:
                 break
 
         return generated_ids

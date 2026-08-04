@@ -1,4 +1,5 @@
 import random
+from optimizers.adam import Adam
 
 class Linear:
     def __init__(self, input_dimension: int, output_dimension: int) -> None:
@@ -14,6 +15,15 @@ class Linear:
             for _ in range(input_dimension)
         ]
         self.biases = [0.0 for _ in range(output_dimension)]
+        self.optimizer = Adam()
+
+        self.weight_first_moment = [[0.0 for _ in range(output_dimension)] for _ in range(input_dimension)]
+
+        self.weight_second_moment = [[0.0 for _ in range(output_dimension)] for _ in range(input_dimension)]
+
+        self.bias_first_moment = [0.0 for _ in range(output_dimension)]
+
+        self.bias_second_moment = [0.0 for _ in range(output_dimension)]
         self.weight_gradients: list[list[float]] | None = None
         self.bias_gradients: list[float] | None = None
         self.last_input: list[float] | list[list[float]] | None = None
@@ -63,24 +73,40 @@ class Linear:
     def update_parameters(self, learning_rate: float) -> None:
         if learning_rate <= 0.0:
             raise ValueError("learning_rate must be positive.")
+
         if self.weight_gradients is None or self.bias_gradients is None:
-            raise RuntimeError("backward() must be called before update_parameters().")
+            raise RuntimeError(
+                "backward() must be called before update_parameters()."
+            )
 
-        for row in range(self.input_dimension):
-            for column in range(self.output_dimension):
-                self.weights[row][column] -= (
-                        learning_rate * self.weight_gradients[row][column]
-                )
+        self.optimizer.learning_rate = learning_rate
+        self.optimizer.start_step()
 
-        for index in range(self.output_dimension):
-            self.biases[index] -= learning_rate * self.bias_gradients[index]
+        (
+            self.weights,
+            self.weight_first_moment,
+            self.weight_second_moment,
+        ) = self.optimizer.update(
+            parameter=self.weights,
+            gradient=self.weight_gradients,
+            first_moment=self.weight_first_moment,
+            second_moment=self.weight_second_moment,
+        )
+
+        (
+            self.biases,
+            self.bias_first_moment,
+            self.bias_second_moment,
+        ) = self.optimizer.update(
+            parameter=self.biases,
+            gradient=self.bias_gradients,
+            first_moment=self.bias_first_moment,
+            second_moment=self.bias_second_moment,
+        )
 
     def _forward_vector(self, inputs: list[float]) -> list[float]:
         return [
-            sum(
-                inputs[input_index] * self.weights[input_index][output_index]
-                for input_index in range(self.input_dimension)
-            ) + self.biases[output_index]
+            sum(inputs[input_index] * self.weights[input_index][output_index] for input_index in range(self.input_dimension) ) + self.biases[output_index]
             for output_index in range(self.output_dimension)
         ]
 

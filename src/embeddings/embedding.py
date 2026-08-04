@@ -1,4 +1,5 @@
 import random
+from optimizers.adam import Adam
 
 
 class Embedding:
@@ -7,9 +8,13 @@ class Embedding:
         self.vocab_size = vocab_size
         self.embedding_dim = embedding_dim
         self.embedding_matrix = self._initialize_matrix()
-        self.embedding_gradients = [
-            [0.0 for _ in range(embedding_dim)]
-            for _ in range(vocab_size)]
+        self.embedding_gradients: list[list[float]] | None = None
+        self.last_token_ids: list[int] | None = None
+        self.optimizer = Adam()
+
+        self.embedding_first_moment = [[0.0 for _ in range(embedding_dim)] for _ in range(vocab_size)]
+
+        self.embedding_second_moment = [[0.0 for _ in range(embedding_dim)] for _ in range(vocab_size)]
 
     def _initialize_matrix(self) -> list[list[float]]:
         matrix = []
@@ -47,16 +52,21 @@ class Embedding:
         if len(output_gradients) != len(self.last_token_ids):
             raise ValueError("Gradient sequence length must match the number of token IDs.")
 
-        for row in output_gradients:
-            if len(row) != self.embedding_dim:
-                raise ValueError(
-                    f"Each embedding gradient must contain {self.embedding_dim} values."
-                )
+        if not isinstance(output_gradients, list):
+            raise TypeError("output_gradients must be a list.")
 
-        self.embedding_gradients = [
-            [0.0 for _ in range(self.embedding_dim)]
-            for _ in range(self.vocab_size)
-        ]
+        if not output_gradients:
+            raise ValueError("output_gradients cannot be empty.")
+
+        for row in output_gradients:
+            if not isinstance(row, list):
+                raise TypeError("Every output gradient row must be a list.")
+            if len(row) != self.embedding_dim:
+                raise ValueError(f"Each embedding gradient must contain {self.embedding_dim} values.")
+            if any(not isinstance(value, (int, float)) for value in row):
+                raise TypeError("Every embedding gradient value must be numeric.")
+
+        self.embedding_gradients = [[0.0 for _ in range(self.embedding_dim)] for _ in range(self.vocab_size)]
 
         for token_id, gradient_row in zip(self.last_token_ids, output_gradients):
             for dimension in range(self.embedding_dim):
@@ -65,12 +75,16 @@ class Embedding:
     def update_parameters(self, learning_rate: float) -> None:
         if learning_rate <= 0.0:
             raise ValueError("learning_rate must be positive.")
+
         if self.embedding_gradients is None:
             raise RuntimeError("backward() must be called before update_parameters().")
 
-        for token_id in range(self.vocab_size):
-            for dimension in range(self.embedding_dim):
-                self.embedding_matrix[token_id][dimension] -= (
-                        learning_rate * self.embedding_gradients[token_id][dimension]
-                )
+        self.optimizer.learning_rate = learning_rate
+        self.optimizer.start_step()
+
+        (self.embedding_matrix,self.embedding_first_moment,self.embedding_second_moment) = (
+            self.optimizer.update(parameter=self.embedding_matrix,gradient=self.embedding_gradients,
+                                  first_moment=self.embedding_first_moment,second_moment=self.embedding_second_moment))
+
+        self.embedding_gradients = None
 
