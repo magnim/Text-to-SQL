@@ -1,6 +1,7 @@
 from losses.cross_entropy import CrossEntropyLoss
 from models.tiny_gpt import TinyGPT
 from training.dataset import create_mini_batches
+from optimizers.learning_rate_scheduler import LearningRateScheduler
 
 
 def train_tiny_gpt( model: TinyGPT, training_dataset: list[dict[str, list[int]]],
@@ -13,6 +14,7 @@ def train_tiny_gpt( model: TinyGPT, training_dataset: list[dict[str, list[int]]]
         raise ValueError("learning_rate must be positive.")
 
     loss_function = CrossEntropyLoss()
+    scheduler = LearningRateScheduler(initial_learning_rate=learning_rate,decay_factor=0.5,decay_every=100)
     epoch_losses = []
 
     for epoch in range(epochs):
@@ -20,6 +22,7 @@ def train_tiny_gpt( model: TinyGPT, training_dataset: list[dict[str, list[int]]]
         processed_examples = 0
 
         mini_batches = create_mini_batches(training_dataset=training_dataset,batch_size=batch_size)
+        current_learning_rate = scheduler.get_learning_rate(epoch)
 
         for batch in mini_batches:
             for example in batch:
@@ -31,7 +34,7 @@ def train_tiny_gpt( model: TinyGPT, training_dataset: list[dict[str, list[int]]]
                 logits_gradients = loss_function.backward()
 
                 model.backward(logits_gradients)
-                model.update_parameters(learning_rate)
+                model.update_parameters(current_learning_rate)
 
                 total_loss += loss
                 processed_examples += 1
@@ -40,8 +43,9 @@ def train_tiny_gpt( model: TinyGPT, training_dataset: list[dict[str, list[int]]]
         epoch_losses.append(average_loss)
 
         print(
-            f"Epoch {epoch + 1}/{epochs} "
-            f"- Average Loss: {average_loss:.6f}"
+            f"Epoch {epoch + 1}/{epochs}"
+            f" | LR: {current_learning_rate:.6f}"
+            f" | Average Loss: {average_loss:.6f}"
         )
 
     return epoch_losses
