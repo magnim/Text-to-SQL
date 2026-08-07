@@ -4,6 +4,12 @@ from layers.layer_normalization import LayerNormalization
 from layers.linear import Linear
 from layers.transformer_block import TransformerBlock
 
+from inference.temperature import Temperature
+from inference.top_k import TopKSampler
+from inference.sampler import Sampler
+from layers.softmax import Softmax
+
+
 class TinyGPT:
     def __init__(self,vocabulary_size: int,embedding_dimension: int,maximum_sequence_length: int,number_of_heads: int,
                  hidden_dimension: int,number_of_layers: int) -> None:
@@ -33,6 +39,11 @@ class TinyGPT:
         self.last_transformer_output: list[list[float]] | None = None
         self.last_normalized_output: list[list[float]] | None = None
         self.last_logits: list[list[float]] | None = None
+
+        self.temperature = Temperature()
+        self.top_k_sampler = TopKSampler(k=min(40, vocabulary_size))
+        self.softmax = Softmax()
+        self.sampler = Sampler()
 
     def forward(self, input_ids: list[int]) -> list[list[float]]:
         self._validate_input_ids(input_ids)
@@ -210,11 +221,16 @@ class TinyGPT:
                 break
             logits = self.forward(generated_ids)
             last_logits = logits[-1]
-            next_token = self._argmax(last_logits)
+            adjusted_logits = self.temperature.forward(last_logits,temperature=1.0)
+            top_indices, top_logits = (self.top_k_sampler.get_top_k(adjusted_logits))
+            probabilities = self.softmax.forward(top_logits)
+            selected_position = (self.sampler.sample(probabilities))
+            next_token = top_indices[selected_position]
             generated_ids.append(next_token)
             if eos_token_id is not None and next_token == eos_token_id:
                 break
 
         return generated_ids
+
 
 

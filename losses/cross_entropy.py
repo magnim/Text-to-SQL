@@ -1,4 +1,5 @@
 import math
+from layers.softmax import Softmax
 
 class CrossEntropyLoss:
     def __init__(self):
@@ -6,6 +7,7 @@ class CrossEntropyLoss:
         self.last_target_ids = None
         self.last_probabilities = None
         self.last_loss = None
+        self.softmax = Softmax()
 
     def _validate_inputs(self,logits,target_ids):
         if not isinstance(logits, list):
@@ -49,12 +51,12 @@ class CrossEntropyLoss:
                 raise ValueError(f"Target ID {target_id} is outside the vocabulary range.")
 
 
-    def _softmax(self, logits):
-        maximum_logit = max(logits)
-        exponentials = [math.exp(logit - maximum_logit) for logit in logits]
-        exponential_sum = sum(exponentials)
-        probabilities = [exponential / exponential_sum for exponential in exponentials]
-        return probabilities
+    # def _softmax(self, logits):
+    #     maximum_logit = max(logits)
+    #     exponentials = [math.exp(logit - maximum_logit) for logit in logits]
+    #     exponential_sum = sum(exponentials)
+    #     probabilities = [exponential / exponential_sum for exponential in exponentials]
+    #     return probabilities
 
     def forward(self,logits,target_ids):
         self._validate_inputs(logits,target_ids)
@@ -65,7 +67,7 @@ class CrossEntropyLoss:
         epsilon = 1e-12
 
         for (position_logits,target_id) in zip(logits,target_ids):
-            probabilities = (self._softmax(position_logits))
+            probabilities = (self.softmax.forward(position_logits))
             self.last_probabilities.append(probabilities)
             correct_probability = max(probabilities[target_id],epsilon)
             position_loss = -math.log(correct_probability)

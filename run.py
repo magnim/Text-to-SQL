@@ -1,6 +1,7 @@
 from models.tiny_gpt import TinyGPT
 from training.dataset import build_training_dataset
 from training.train_tiny_gpt import train_tiny_gpt
+from inference.decoder import Decoder
 
 corpus = [
     "the cat sat on the mat",
@@ -33,10 +34,37 @@ epoch_losses = train_tiny_gpt(model=model,training_dataset=training_dataset,epoc
 
 prompt_ids = [tokenizer.vocab["<BOS>"]] + tokenizer.encode_ids("the")
 
-generated_ids = model.generate(
+decoder = Decoder(model)
+
+# generated_ids = decoder.generate(
+#     input_ids=prompt_ids,
+#     maximum_new_tokens=20,
+#     strategy="greedy",
+#     eos_token_id=tokenizer.vocab["<EOS>"],
+# )
+# generated_ids = decoder.generate(
+#     input_ids=prompt_ids,
+#     maximum_new_tokens=20,
+#     strategy="top_k",
+#     top_k=2,
+#     temperature=0.5,
+#     repetition_penalty=None,
+#     eos_token_id=tokenizer.vocab["<EOS>"],
+# )
+# generated_ids = decoder.generate(
+#     input_ids=prompt_ids,
+#     maximum_new_tokens=20,
+#     strategy="top_p",
+#     top_p=0.70,
+#     temperature=0.5,
+#     repetition_penalty=None,
+#     eos_token_id=tokenizer.vocab["<EOS>"])
+generated_ids = decoder.generate(
     input_ids=prompt_ids,
     maximum_new_tokens=20,
-    eos_token_id=tokenizer.vocab["<EOS>"]
+    strategy="beam",
+    beam_width=3,
+    eos_token_id=tokenizer.vocab["<EOS>"],
 )
 
 id_to_token = {
@@ -53,3 +81,4 @@ print(
     ]
 )
 print("Generated text:", tokenizer.decode_ids(generated_ids))
+
