@@ -1,4 +1,6 @@
 from src.tokenizer.bpe import BPETrainer
+from text_to_sql.schema_role_encoder import SchemaRoleEncoder
+from src.embeddings.schema_role_embedding import SchemaRoleEmbedding
 
 
 def prepare_training_words(corpus: list[str]) -> list[str]:
@@ -84,10 +86,35 @@ def create_training_dataset(encoded_sequences: list[list[int]],window_size: int,
     return training_dataset
 
 
-def build_training_dataset(corpus: list[str],num_merges: int,window_size: int, stride: int) -> tuple[BPETrainer,list[dict[str, list[int]]]]:
-    tokenizer = train_tokenizer(corpus=corpus,num_merges=num_merges)
-    encoded_sequences = encode_corpus(corpus=corpus,tokenizer=tokenizer)
-    training_dataset = create_training_dataset(encoded_sequences,window_size=window_size,stride=stride)
+def build_text_to_sql_training_dataset(corpus: list[dict], schema: dict[str, list[str]], num_merges: int) -> tuple[BPETrainer, list[dict]]:
+    tokenizer_corpus = [example["prompt"] + example["sql"] for example in corpus]
+    tokenizer = train_tokenizer(corpus=tokenizer_corpus, num_merges=num_merges)
+    role_encoder = SchemaRoleEncoder(tokenizer=tokenizer)
+
+    schema_token_ids, schema_role_ids = role_encoder.encode_schema(schema)
+    training_dataset = []
+
+    for example in corpus:
+        prompt = example["prompt"]
+        sql = example["sql"]
+
+        schema_start = prompt.find("Table ")
+        schema_end = prompt.find("\n\nQuestion:")
+
+        prefix_ids = tokenizer.encode_ids(prompt[:schema_start])
+        suffix_ids = tokenizer.encode_ids(prompt[schema_end:])
+        sql_ids = tokenizer.encode_ids(sql)
+
+        prompt_ids = prefix_ids + schema_token_ids + suffix_ids
+        input_ids = prompt_ids + sql_ids[:-1]
+
+        role_ids = [SchemaRoleEmbedding.NORMAL] * len(prefix_ids) + schema_role_ids + [SchemaRoleEmbedding.NORMAL] * len(suffix_ids) + [SchemaRoleEmbedding.NORMAL] * (len(sql_ids) - 1)
+
+        if len(input_ids) != len(role_ids):
+            raise RuntimeError("input_ids and schema_role_ids are not aligned.")
+
+        training_dataset.append({"input_ids": input_ids, "target_ids": sql_ids, "prompt_length": len(prompt_ids), "schema_role_ids": role_ids})
+
     return tokenizer, training_dataset
 
 

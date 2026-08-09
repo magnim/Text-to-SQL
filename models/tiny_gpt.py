@@ -8,7 +8,7 @@ from inference.temperature import Temperature
 from inference.top_k import TopKSampler
 from inference.sampler import Sampler
 from layers.softmax import Softmax
-
+from src.embeddings.schema_role_embedding import SchemaRoleEmbedding
 
 class TinyGPT:
     def __init__(self,vocabulary_size: int,embedding_dimension: int,maximum_sequence_length: int,number_of_heads: int,
@@ -25,6 +25,7 @@ class TinyGPT:
         self.token_embedding = Embedding(vocabulary_size,embedding_dimension)
 
         self.position_embedding = PositionalEmbedding(maximum_sequence_length,embedding_dimension)
+        self.schema_role_embedding = SchemaRoleEmbedding(embedding_dimension=embedding_dimension)
 
         self.transformer_blocks = [TransformerBlock(embedding_dimension,number_of_heads,hidden_dimension) for _ in range(number_of_layers)]
 
@@ -39,14 +40,19 @@ class TinyGPT:
         self.last_transformer_output: list[list[float]] | None = None
         self.last_normalized_output: list[list[float]] | None = None
         self.last_logits: list[list[float]] | None = None
+        self.last_schema_role_embeddings: list[list[float]] | None = None
 
         self.temperature = Temperature()
         self.top_k_sampler = TopKSampler(k=min(40, vocabulary_size))
         self.softmax = Softmax()
         self.sampler = Sampler()
 
-    def forward(self, input_ids: list[int]) -> list[list[float]]:
+    def forward(self, input_ids: list[int], schema_role_ids: list[int] | None = None) -> list[list[float]]:
         self._validate_input_ids(input_ids)
+        if schema_role_ids is None:
+            schema_role_ids = [SchemaRoleEmbedding.NORMAL for _ in input_ids]
+        else:
+            self._validate_schema_role_ids(input_ids=input_ids,schema_role_ids=schema_role_ids,)
         self.last_input_ids = input_ids.copy()
 
         token_embeddings = self.token_embedding.forward(input_ids)
@@ -55,7 +61,11 @@ class TinyGPT:
         position_embeddings = self.position_embedding.forward(len(input_ids))
         self.last_position_embeddings = [row.copy() for row in position_embeddings]
 
-        hidden_states = self._add_embeddings(token_embeddings,position_embeddings)
+        schema_role_embeddings = self.schema_role_embedding.forward(schema_role_ids)
+
+        self.last_schema_role_embeddings = [row.copy() for row in schema_role_embeddings]
+
+        hidden_states = self._add_embeddings(token_embeddings,position_embeddings,schema_role_embeddings)
         self.last_combined_embeddings = [row.copy() for row in hidden_states]
 
         for transformer_block in self.transformer_blocks:
@@ -81,30 +91,43 @@ class TinyGPT:
             hidden_gradients = transformer_block.backward(hidden_gradients)
 
         token_embedding_gradients = [row.copy() for row in hidden_gradients]
-
         position_embedding_gradients = [row.copy() for row in hidden_gradients]
 
         self.token_embedding.backward(token_embedding_gradients)
         self.position_embedding.backward(position_embedding_gradients)
+        self.schema_role_embedding.backward(hidden_gradients)
 
         return hidden_gradients
 
-    def _add_embeddings(self,token_embeddings: list[list[float]],position_embeddings: list[list[float]]) -> list[list[float]]:
-        if len(token_embeddings) != len(position_embeddings):
-            raise ValueError("Token and positional embeddings must have the same sequence length.")
+    def _add_embeddings(self,token_embeddings: list[list[float]],position_embeddings: list[list[float]],
+                        schema_role_embeddings: list[list[float]]) -> list[list[float]]:
+        if not (len(token_embeddings) == len(position_embeddings) == len(schema_role_embeddings)):
+            raise ValueError("Token, position, and schema-role embeddings must have the same sequence length.")
 
         combined_embeddings = []
 
-        for token_row, position_row in zip(token_embeddings,position_embeddings):
-            if len(token_row) != self.embedding_dimension:
-                raise ValueError(f"Token embedding rows must contain {self.embedding_dimension} values.")
+        for token_row, position_row,role_row in zip(token_embeddings,position_embeddings,schema_role_embeddings):
+            if not (len(token_row) == len(position_row) == len(role_row) == self.embedding_dimension):
+                raise ValueError("Token, position, and schema-role embeddings must have the same sequence length.")
 
-            if len(position_row) != self.embedding_dimension:
-                raise ValueError(f"Position embedding rows must contain {self.embedding_dimension} values.")
-
-            combined_embeddings.append([token_value + position_value for token_value, position_value in zip(token_row,position_row)])
+            combined_embeddings.append([token_value + position_value + role_value
+                                        for token_value, position_value, role_value in zip(token_row,position_row,role_row)])
 
         return combined_embeddings
+
+    def _validate_schema_role_ids(self,input_ids: list[int],schema_role_ids: list[int]) -> None:
+        if not isinstance(schema_role_ids, list):
+            raise TypeError("schema_role_ids must be a list.")
+
+        if len(schema_role_ids) != len(input_ids):
+            raise ValueError("schema_role_ids must have the same length as input_ids.")
+
+        for role_id in schema_role_ids:
+            if not isinstance(role_id, int):
+                raise TypeError("Every schema role ID must be an integer.")
+
+            if role_id not in (SchemaRoleEmbedding.NORMAL,SchemaRoleEmbedding.TABLE,SchemaRoleEmbedding.COLUMN):
+                raise ValueError(f"Invalid schema role ID: {role_id}.")
 
     def _validate_input_ids(self, input_ids: list[int]) -> None:
         if not isinstance(input_ids, list):
@@ -180,6 +203,7 @@ class TinyGPT:
 
         self.token_embedding.update_parameters(learning_rate)
         self.position_embedding.update_parameters(learning_rate)
+        self.schema_role_embedding.update_parameters(learning_rate)
 
         for transformer_block in self.transformer_blocks:
             transformer_block.update_parameters(learning_rate)
