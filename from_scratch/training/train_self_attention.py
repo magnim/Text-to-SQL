@@ -1,6 +1,6 @@
 import math
 
-from layers.self_attention import SelfAttention
+from from_scratch.layers.self_attention import SelfAttention
 
 
 def matrix_shape(matrix: list[list[float]]) -> tuple[int, int]:

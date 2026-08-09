@@ -1,7 +1,7 @@
-from losses.cross_entropy import CrossEntropyLoss
-from models.tiny_gpt import TinyGPT
+from from_scratch.losses.cross_entropy import CrossEntropyLoss
+from from_scratch.models.tiny_gpt import TinyGPT
 from training.dataset import create_mini_batches
-from optimizers.learning_rate_scheduler import LearningRateScheduler
+from from_scratch.optimizers.learning_rate_scheduler import LearningRateScheduler
 
 
 def train_tiny_gpt(model: TinyGPT, training_dataset: list[dict], epochs: int, learning_rate: float, batch_size: int) -> list[float]:

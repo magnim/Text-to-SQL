@@ -1,7 +1,7 @@
-from layers.feed_forward import FeedForwardNetwork
-from layers.layer_normalization import LayerNormalization
-from layers.multi_headed import MultiHeadSelfAttention
-from layers.residual_connection import ResidualConnection
+from from_scratch.layers.feed_forward import FeedForwardNetwork
+from from_scratch.layers.layer_normalization import LayerNormalization
+from from_scratch.layers.multi_headed import MultiHeadSelfAttention
+from from_scratch.layers.residual_connection import ResidualConnection
 
 class TransformerBlock:
     def __init__(self,embedding_dimension: int,number_of_heads: int,hidden_dimension: int) -> None:

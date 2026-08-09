@@ -1,14 +1,14 @@
-from src.embeddings.embedding import Embedding
-from src.embeddings.positional_embed import PositionalEmbedding
-from layers.layer_normalization import LayerNormalization
-from layers.linear import Linear
-from layers.transformer_block import TransformerBlock
+from from_scratch.embeddings.embedding import Embedding
+from from_scratch.embeddings.positional_embed import PositionalEmbedding
+from from_scratch.layers.layer_normalization import LayerNormalization
+from from_scratch.layers.linear import Linear
+from from_scratch.layers.transformer_block import TransformerBlock
 
 from inference.temperature import Temperature
 from inference.top_k import TopKSampler
 from inference.sampler import Sampler
-from layers.softmax import Softmax
-from src.embeddings.schema_role_embedding import SchemaRoleEmbedding
+from from_scratch.layers.softmax import Softmax
+from from_scratch.embeddings.schema_role_embedding import SchemaRoleEmbedding
 
 class TinyGPT:
     def __init__(self,vocabulary_size: int,embedding_dimension: int,maximum_sequence_length: int,number_of_heads: int,

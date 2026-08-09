@@ -1,8 +1,8 @@
 import sqlite3
 
-from models.tiny_gpt import TinyGPT
+from from_scratch.models.tiny_gpt import TinyGPT
 from training.dataset import build_text_to_sql_training_dataset
-from training.train_tiny_gpt import train_tiny_gpt
+from from_scratch.training.train_tiny_gpt import train_tiny_gpt
 
 from text_to_sql.schema_encoder import SchemaEncoder
 from text_to_sql.prompt_builder import PromptBuilder

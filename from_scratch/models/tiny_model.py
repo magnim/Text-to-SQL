@@ -1,6 +1,6 @@
-from src.embeddings.embedding import Embedding
-from layers.linear import Linear
-from layers.relu import ReLU
+from from_scratch.embeddings.embedding import Embedding
+from from_scratch.layers.linear import Linear
+from from_scratch.layers.relu import ReLU
 
 class TinyModel:
 

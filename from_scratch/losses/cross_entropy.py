@@ -1,5 +1,5 @@
 import math
-from layers.softmax import Softmax
+from from_scratch.layers.softmax import Softmax
 
 class CrossEntropyLoss:
     def __init__(self):

@@ -2,9 +2,9 @@ import random
 
 from data.text_dataset import TextDataset
 from data.data_loader import DataLoader
-from losses.cross_entropy import CrossEntropyLoss
-from models.tiny_model import TinyModel
-from training.trainer import Trainer
+from from_scratch.losses.cross_entropy import CrossEntropyLoss
+from from_scratch.models.tiny_model import TinyModel
+from from_scratch.training.trainer import Trainer
 
 random.seed(42)
 

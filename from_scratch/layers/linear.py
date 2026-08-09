@@ -1,5 +1,5 @@
 import random
-from optimizers.adam import Adam
+from from_scratch.optimizers.adam import Adam
 
 class Linear:
     def __init__(self, input_dimension: int, output_dimension: int) -> None:

@@ -1,7 +1,7 @@
 import math
 import random
-from optimizers.adam import Adam
-from utils.matrix import matrix_add, matrix_multiply, transpose
+from from_scratch.optimizers.adam import Adam
+from from_scratch.utils.matrix import matrix_add, matrix_multiply, transpose
 
 
 class SelfAttention:

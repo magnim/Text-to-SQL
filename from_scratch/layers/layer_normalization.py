@@ -1,4 +1,4 @@
-from optimizers.adam import Adam
+from from_scratch.optimizers.adam import Adam
 
 class LayerNormalization:
     def __init__(self, embedding_dimension: int, epsilon: float = 1e-5) -> None:

@@ -1,4 +1,4 @@
-from layers.softmax import Softmax
+from from_scratch.layers.softmax import Softmax
 from inference.beam_search import BeamSearch
 from inference.repetition_penalty import RepetitionPenalty
 from inference.sampler import Sampler

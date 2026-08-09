@@ -1,8 +1,8 @@
 import math
 import random
 
-from layers.self_attention import SelfAttention
-from optimizers.adam import Adam
+from from_scratch.layers.self_attention import SelfAttention
+from from_scratch.optimizers.adam import Adam
 
 
 class MultiHeadSelfAttention:

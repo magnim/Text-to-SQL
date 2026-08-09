@@ -1,6 +1,6 @@
 import random
-from utils.matrix import matrix_multiply, transpose
-from optimizers.adam import Adam
+from from_scratch.utils.matrix import matrix_multiply, transpose
+from from_scratch.optimizers.adam import Adam
 
 
 class FeedForwardNetwork:

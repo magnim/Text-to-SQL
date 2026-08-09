@@ -1,6 +1,6 @@
 from src.tokenizer.bpe import BPETrainer
 from text_to_sql.schema_role_encoder import SchemaRoleEncoder
-from src.embeddings.schema_role_embedding import SchemaRoleEmbedding
+from from_scratch.embeddings.schema_role_embedding import SchemaRoleEmbedding
 
 
 def prepare_training_words(corpus: list[str]) -> list[str]:

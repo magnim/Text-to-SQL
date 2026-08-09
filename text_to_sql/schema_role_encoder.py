@@ -1,4 +1,4 @@
-from src.embeddings.schema_role_embedding import SchemaRoleEmbedding
+from from_scratch.embeddings.schema_role_embedding import SchemaRoleEmbedding
 
 class SchemaRoleEncoder:
 
