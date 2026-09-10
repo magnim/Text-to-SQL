@@ -2,7 +2,7 @@
 import sqlite3
 
 from database.connection import get_connection
-from database.schema_scanner import scan_schema
+from database.schema_scanner import scan_column_types,scan_schema
 
 
 def test_sqlite_backend_connection_and_schema_scan(tmp_path, monkeypatch):
@@ -20,6 +20,11 @@ def test_sqlite_backend_connection_and_schema_scan(tmp_path, monkeypatch):
     try:
         schema = scan_schema(connection)
         assert schema == {"employees": ["id", "name", "age"]}
+        assert scan_column_types(connection) == {
+            ("employees","id"):"INTEGER",
+            ("employees","name"):"TEXT",
+            ("employees","age"):"INTEGER",
+        }
 
         cursor = connection.cursor()
         cursor.execute("SELECT id, name, age FROM employees")

@@ -19,7 +19,8 @@ class TextToSQLPipeline:
         self,model,tokenizer,schema,connection,beam_width=12,
         grounding_weight=1.0,structure_weight=1.0,
         semantic_schema_encoder=None,schema_semantic_weight=4.0,
-        schema_semantic_order_weight=0.25,generation_token_reserve=96,**legacy
+        schema_semantic_order_weight=0.25,generation_token_reserve=96,
+        column_types=None,**legacy
     ):
         if model is None:raise ValueError("model cannot be None.")
         if tokenizer is None:raise ValueError("tokenizer cannot be None.")
@@ -35,6 +36,7 @@ class TextToSQLPipeline:
         self.schema_semantic_weight=float(schema_semantic_weight)
         self.schema_semantic_order_weight=float(schema_semantic_order_weight)
         self.generation_token_reserve=int(generation_token_reserve)
+        self.column_types=dict(column_types or {})
 
         # Legacy compatibility attributes; intentionally non-authoritative.
         self.semantic_column_linker=None
@@ -49,21 +51,79 @@ class TextToSQLPipeline:
         text=text.replace("_"," ").lower()
         return " ".join(text.split())
 
-    def _select_prompt_table(self,question,semantic_scores):
+    def _mentioned_prompt_table(self,question,semantic_scores):
         normalized_question=self._normalize_identifier(question)
         mentioned=[]
         for table in self.schema:
             normalized_table=self._normalize_identifier(table)
             if re.search(rf"(?<!\w){re.escape(normalized_table)}(?!\w)",normalized_question):
                 mentioned.append(table)
-        if mentioned:
-            table_scores=semantic_scores.get("tables",{})
-            return max(mentioned,key=lambda table:float(table_scores.get(table,0.0)))
+        if not mentioned:
+            return None
+        table_scores=semantic_scores.get("tables",{})
+        return max(mentioned,key=lambda table:float(table_scores.get(table,0.0)))
 
+    def _select_prompt_table(self,question,semantic_scores):
+        mentioned=self._mentioned_prompt_table(question,semantic_scores)
+        if mentioned is not None:
+            return mentioned
         table_scores=semantic_scores.get("tables",{})
         if table_scores:
             return max(table_scores,key=table_scores.get)
         return None
+
+    @staticmethod
+    def _comparison_type_family(type_name):
+        normalized=str(type_name or "").upper()
+        if any(token in normalized for token in ("INT","REAL","FLOA","DOUB","DEC","NUM")):
+            return "numeric"
+        if any(token in normalized for token in ("DATE","TIME","YEAR")):
+            return "temporal"
+        if any(token in normalized for token in ("CHAR","CLOB","TEXT","BLOB","BINARY","JSON","ENUM","SET")):
+            return "text"
+        return "unknown"
+
+    def _apply_numeric_comparison_type_prior(self,semantic_scores,intents,values,question):
+        if not values or not self.column_types:
+            return
+        operator_probs=torch.exp(torch.tensor(intents["operator"],dtype=torch.float32))
+        if float(max(operator_probs[1],operator_probs[2]))<0.70:
+            return
+
+        where_scores=dict(
+            semantic_scores.get("where_columns",semantic_scores.get("columns",{}))
+        )
+        if not where_scores:
+            return
+
+        normalized_question=self._normalize_identifier(question)
+        directly_mentioned=set()
+        for key in where_scores:
+            column=self._normalize_identifier(key[1])
+            if re.search(rf"(?<!\w){re.escape(column)}(?!\w)",normalized_question):
+                directly_mentioned.add(key)
+
+        year_like_value=False
+        if len(values)==1:
+            try:
+                numeric_value=float(values[0])
+                year_like_value=numeric_value.is_integer() and 1000<=numeric_value<=2999
+            except ValueError:
+                pass
+
+        for key,score in list(where_scores.items()):
+            family=self._comparison_type_family(self.column_types.get(key))
+            if family=="text":
+                where_scores[key]=float(score)-1.0
+                continue
+            if family in {"numeric","temporal"}:
+                adjusted=2.0*float(score)
+                if year_like_value and not directly_mentioned:
+                    column_tokens=set(self._normalize_identifier(key[1]).split())
+                    if family=="temporal" or "year" in column_tokens:
+                        adjusted+=0.30
+                where_scores[key]=adjusted
+        semantic_scores["where_columns"]=where_scores
 
     def _predict_intents(self,input_ids,role_ids,spans):
         q_start,q_end=spans["question"]
@@ -176,6 +236,13 @@ class TextToSQLPipeline:
                     intents["operator"]=torch.log_softmax(
                         operator,dim=-1
                     ).tolist()
+
+            # Numeric inequality values should ground to columns whose declared
+            # database types can sensibly participate in numeric/temporal
+            # comparisons. This is a schema-type prior, not a phrase mapping.
+            self._apply_numeric_comparison_type_prior(
+                semantic_scores,intents,values,question
+            )
 
             if values and semantic_scores["columns"]:
                 best_column=max(semantic_scores["columns"].values())

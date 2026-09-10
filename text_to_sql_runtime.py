@@ -2,7 +2,7 @@ from pathlib import Path
 import torch
 
 from database.connection import get_connection
-from database.schema_scanner import scan_schema
+from database.schema_scanner import scan_column_types,scan_schema
 from pytorch_impl.tiny_gpt import TinyGPT
 from src.tokenizer.bpe import BPETrainer
 from text_to_sql.text_to_sql_pipeline import TextToSQLPipeline
@@ -17,6 +17,7 @@ class TextToSQLRuntime:
     def __init__(self):
         self.connection=get_connection()
         self.schema=scan_schema(self.connection)
+        self.column_types=scan_column_types(self.connection)
         self.tokenizer=BPETrainer.load(str(TOKENIZER_PATH))
         self.model=TinyGPT(
             len(self.tokenizer.vocab),64,512,4,128,4,5
@@ -37,7 +38,8 @@ class TextToSQLRuntime:
     def _build_pipeline(self):
         return TextToSQLPipeline(
             self.model,self.tokenizer,self.schema,self.connection,beam_width=12,
-            semantic_schema_encoder=self.semantic_schema_encoder,schema_semantic_weight=4.0
+            semantic_schema_encoder=self.semantic_schema_encoder,schema_semantic_weight=4.0,
+            column_types=self.column_types
         )
 
     def generate(self,question):
@@ -57,16 +59,20 @@ class TextToSQLRuntime:
     def refresh_schema(self):
         old_connection=self.connection
         old_schema=self.schema
+        old_column_types=getattr(self,"column_types",{})
         old_pipeline=self.pipeline
         new_connection=get_connection()
         try:
             new_schema=scan_schema(new_connection)
+            new_column_types=scan_column_types(new_connection)
             self.connection=new_connection
             self.schema=new_schema
+            self.column_types=new_column_types
             self.pipeline=self._build_pipeline()
         except Exception:
             self.connection=old_connection
             self.schema=old_schema
+            self.column_types=old_column_types
             self.pipeline=old_pipeline
             new_connection.close()
             raise

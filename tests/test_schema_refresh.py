@@ -72,5 +72,7 @@ def test_refresh_schema_reconnects_and_sees_new_sqlite_table(tmp_path, monkeypat
             "employees": ["id", "name"],
         }
         assert runtime.schema == refreshed
+        assert runtime.column_types[("customers","age")] == "INTEGER"
+        assert runtime.column_types[("employees","name")] == "TEXT"
     finally:
         runtime.connection.close()
