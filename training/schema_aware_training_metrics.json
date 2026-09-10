@@ -1,0 +1,86 @@
+{
+  "dataset_size": 2942,
+  "sql_target_loss_sample": 5.294198311378248,
+  "sql_target_tokens": 3587,
+  "final_cached_schema_aware_shard": {
+    "epoch": 2,
+    "shard": 7,
+    "examples": 469,
+    "mean_loss": 5.038056644041147,
+    "projection_accuracy": 0.8742004264392325,
+    "arity_accuracy": 0.8464818763326226,
+    "clause_bit_accuracy": 0.8130774697938877,
+    "direction_accuracy": 0.7904761904761904,
+    "continuation_accuracy": 0.6226012793176973,
+    "table_accuracy": 0.650319829424307,
+    "where_column_accuracy": 0.6943231441048034,
+    "order_column_accuracy": 0.780952380952381,
+    "normalized_accuracy": 0.5102639296187683,
+    "contextual_accuracy": 0.5339321357285429,
+    "learning_rate": 0.0012
+  },
+  "final_balanced_grounding_shard": {
+    "epoch": 1,
+    "shard": 7,
+    "examples": 495,
+    "loss": 4.343578144998261,
+    "table_accuracy": 0.5676767676767677,
+    "where_accuracy": 0.5232323232323233,
+    "clause_bit_accuracy": 1.0,
+    "continuation_accuracy": 1.0,
+    "source_role_counts": {
+      "experience": 19,
+      "age": 15,
+      "price": 22,
+      "pay": 13,
+      "stock": 8,
+      "rating": 14,
+      "mileage": 1,
+      "amount": 6,
+      "quantity": 15
+    }
+  },
+  "legacy_structure_final": {
+    "epoch": 8,
+    "examples": 336,
+    "loss": 0.40540788429124014,
+    "projection_accuracy": 1.0,
+    "arity_accuracy": 1.0,
+    "clause_bit_accuracy": 0.9900793650793651,
+    "direction_accuracy": 1.0,
+    "continuation_accuracy": 0.9970238095238095
+  },
+  "projection_pointer_final": {
+    "epoch": 10,
+    "decisions": 272,
+    "loss": 0.34905435828319337,
+    "accuracy": 0.8970588235294118
+  },
+  "balanced_clause_final": {
+    "epoch": 8,
+    "examples": 2942,
+    "loss": 1.2697440898799313,
+    "clause_bit_accuracy": 0.8494221617946975,
+    "continuation_accuracy": 0.7426920462270564
+  },
+  "semantic_structure_final": {
+    "epoch": 10,
+    "examples": 2942,
+    "loss": 0.9963981249476679,
+    "clause_bit_accuracy": 0.8958758214366644,
+    "continuation_accuracy": 0.8096532970768185
+  },
+  "lexical_structure_final": {
+    "epoch": 10,
+    "examples": 2942,
+    "loss": 0.02707248734706604,
+    "clause_bit_accuracy": 0.9989802855200544,
+    "continuation_accuracy": 0.9979605710401088
+  },
+  "numeric_role_pointer_final": {
+    "epoch": 12,
+    "decisions": 288,
+    "loss": 0.006670856097457545,
+    "accuracy": 1.0
+  }
+}

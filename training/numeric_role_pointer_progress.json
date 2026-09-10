@@ -1,0 +1,77 @@
+{
+  "runs": [
+    {
+      "epoch": 1,
+      "decisions": 288,
+      "loss": 0.6494802450761199,
+      "accuracy": 0.6145833333333334
+    },
+    {
+      "epoch": 2,
+      "decisions": 288,
+      "loss": 0.2970010639530503,
+      "accuracy": 0.9895833333333334
+    },
+    {
+      "epoch": 3,
+      "decisions": 288,
+      "loss": 0.13300642595600543,
+      "accuracy": 1.0
+    },
+    {
+      "epoch": 4,
+      "decisions": 288,
+      "loss": 0.06367887260502256,
+      "accuracy": 1.0
+    },
+    {
+      "epoch": 5,
+      "decisions": 288,
+      "loss": 0.03487969274121699,
+      "accuracy": 1.0
+    },
+    {
+      "epoch": 6,
+      "decisions": 288,
+      "loss": 0.02232632422257868,
+      "accuracy": 1.0
+    },
+    {
+      "epoch": 7,
+      "decisions": 288,
+      "loss": 0.015950221175343258,
+      "accuracy": 1.0
+    },
+    {
+      "epoch": 8,
+      "decisions": 288,
+      "loss": 0.012168070438494598,
+      "accuracy": 1.0
+    },
+    {
+      "epoch": 9,
+      "decisions": 288,
+      "loss": 0.00992591602645613,
+      "accuracy": 1.0
+    },
+    {
+      "epoch": 10,
+      "decisions": 288,
+      "loss": 0.008404552148148368,
+      "accuracy": 1.0
+    },
+    {
+      "epoch": 11,
+      "decisions": 288,
+      "loss": 0.007430700593962077,
+      "accuracy": 1.0
+    },
+    {
+      "epoch": 12,
+      "decisions": 288,
+      "loss": 0.006670856097457545,
+      "accuracy": 1.0
+    }
+  ],
+  "training_decisions": 288
+}

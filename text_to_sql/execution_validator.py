@@ -1,4 +1,9 @@
 import sqlite3
+try:
+    import pymysql
+    MYSQL_ERRORS = (pymysql.MySQLError,)
+except ImportError:
+    MYSQL_ERRORS = ()
 from text_to_sql.sql_hypothesis import SQLHypothesis
 
 
@@ -32,7 +37,7 @@ class ExecutionValidator:
             cursor = self.connection.cursor()
             cursor.execute(sql)
             return True
-        except sqlite3.Error:
+        except (sqlite3.Error,) + MYSQL_ERRORS:
             return False
 
     def validate_hypothesis(self,hypothesis: SQLHypothesis) -> bool:

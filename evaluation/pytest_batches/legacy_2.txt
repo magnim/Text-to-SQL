@@ -1,0 +1,7 @@
+tests/test_option_a_regressions.py::test_option_a_real_model_regressions[show product names and prices-SELECT name, price FROM products;]
+tests/test_option_a_regressions.py::test_option_a_real_model_regressions[show order quantities and statuses-SELECT quantity, status FROM orders;]
+tests/test_option_a_regressions.py::test_option_a_real_model_regressions[show employee names and departments-SELECT name, department FROM employees;]
+tests/test_option_a_regressions.py::test_option_a_real_model_regressions[show employee names and salaries where age is greater than 30-SELECT name, salary FROM employees WHERE age > 30;]
+tests/test_option_a_regressions.py::test_option_a_real_model_regressions[show employee names and salaries where age equals 30-SELECT name, salary FROM employees WHERE age = 30;]
+tests/test_option_a_regressions.py::test_option_a_real_model_regressions[show product names and prices where price is less than 100-SELECT name, price FROM products WHERE price < 100;]
+tests/test_option_a_regressions.py::test_option_a_real_model_regressions[show order quantities and statuses where quantity is greater than 2-SELECT quantity, status FROM orders WHERE quantity > 2;]

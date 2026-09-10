@@ -1,0 +1,84 @@
+{
+  "runs": [
+    {
+      "epoch": 1,
+      "examples": 336,
+      "loss": 4.388258525303432,
+      "projection_accuracy": 0.9523809523809523,
+      "arity_accuracy": 0.9642857142857143,
+      "clause_bit_accuracy": 0.6825396825396826,
+      "direction_accuracy": 0.765625,
+      "continuation_accuracy": 0.6666666666666666
+    },
+    {
+      "epoch": 2,
+      "examples": 336,
+      "loss": 2.458362477166312,
+      "projection_accuracy": 0.9880952380952381,
+      "arity_accuracy": 1.0,
+      "clause_bit_accuracy": 0.7321428571428571,
+      "direction_accuracy": 0.875,
+      "continuation_accuracy": 0.7976190476190477
+    },
+    {
+      "epoch": 3,
+      "examples": 336,
+      "loss": 1.4747625419071742,
+      "projection_accuracy": 0.9940476190476191,
+      "arity_accuracy": 1.0,
+      "clause_bit_accuracy": 0.8442460317460317,
+      "direction_accuracy": 0.890625,
+      "continuation_accuracy": 0.9851190476190477
+    },
+    {
+      "epoch": 4,
+      "examples": 336,
+      "loss": 1.1020375660487585,
+      "projection_accuracy": 0.9940476190476191,
+      "arity_accuracy": 1.0,
+      "clause_bit_accuracy": 0.9126984126984127,
+      "direction_accuracy": 0.890625,
+      "continuation_accuracy": 0.9970238095238095
+    },
+    {
+      "epoch": 5,
+      "examples": 336,
+      "loss": 0.8357383779117039,
+      "projection_accuracy": 1.0,
+      "arity_accuracy": 1.0,
+      "clause_bit_accuracy": 0.9444444444444444,
+      "direction_accuracy": 0.921875,
+      "continuation_accuracy": 1.0
+    },
+    {
+      "epoch": 6,
+      "examples": 336,
+      "loss": 0.6733774883406503,
+      "projection_accuracy": 1.0,
+      "arity_accuracy": 1.0,
+      "clause_bit_accuracy": 0.9593253968253969,
+      "direction_accuracy": 0.96875,
+      "continuation_accuracy": 1.0
+    },
+    {
+      "epoch": 7,
+      "examples": 336,
+      "loss": 0.5400189459323883,
+      "projection_accuracy": 1.0,
+      "arity_accuracy": 1.0,
+      "clause_bit_accuracy": 0.9702380952380952,
+      "direction_accuracy": 1.0,
+      "continuation_accuracy": 1.0
+    },
+    {
+      "epoch": 8,
+      "examples": 336,
+      "loss": 0.40540788429124014,
+      "projection_accuracy": 1.0,
+      "arity_accuracy": 1.0,
+      "clause_bit_accuracy": 0.9900793650793651,
+      "direction_accuracy": 1.0,
+      "continuation_accuracy": 0.9970238095238095
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "history": [
+    {
+      "step": 40,
+      "loss": 1.8816736936569214,
+      "retrieval_accuracy": 0.6000000238418579
+    },
+    {
+      "step": 80,
+      "loss": 0.10950981825590134,
+      "retrieval_accuracy": 0.949999988079071
+    },
+    {
+      "step": 120,
+      "loss": 0.2352968156337738,
+      "retrieval_accuracy": 0.949999988079071
+    },
+    {
+      "step": 160,
+      "loss": 0.00904895644634962,
+      "retrieval_accuracy": 1.0
+    },
+    {
+      "step": 200,
+      "loss": 0.0023240961600095034,
+      "retrieval_accuracy": 1.0
+    },
+    {
+      "step": 240,
+      "loss": 0.0006437012343667448,
+      "retrieval_accuracy": 1.0
+    },
+    {
+      "step": 280,
+      "loss": 0.0004402996273711324,
+      "retrieval_accuracy": 1.0
+    }
+  ],
+  "pairs": 640
+}

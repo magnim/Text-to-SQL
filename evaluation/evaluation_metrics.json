@@ -1,0 +1,169 @@
+{
+  "pytest_collected": 54,
+  "pytest_passed": 54,
+  "pytest_failed": 0,
+  "legacy_generation": {
+    "passed": 21,
+    "total": 21
+  },
+  "unseen_schema": {
+    "passed": 4,
+    "total": 4
+  },
+  "heldout_semantic_generalization": {
+    "passed": 6,
+    "total": 6
+  },
+  "where_order_limit_composition": {
+    "passed": 3,
+    "total": 3
+  },
+  "fast_unit_runtime_schema_tests": {
+    "passed": 18,
+    "total": 18
+  },
+  "trained_model_semantic_accuracy": {
+    "passed": 6,
+    "total": 6,
+    "accuracy": 1.0
+  },
+  "reset_model_ablation": {
+    "passed": 0,
+    "total": 6,
+    "accuracy": 0.0
+  },
+  "compileall": "pass",
+  "anti_hardcoding_audit": "pass",
+  "model_load": "pass",
+  "sqlite_runtime_generation": "pass",
+  "sqlite_execution": "pass",
+  "streamlit_startup": "pass",
+  "streamlit_startup_note": "server opened port 8765; process intentionally terminated after smoke test",
+  "checkpoint_sha256": "edfebc0d701c3e4a3da76aca273709110d125bf08a0f65bc1ac2d8b4095e79c0",
+  "final_composition_guard": {
+    "passed": 3,
+    "total": 3
+  },
+  "pure_limit_guard": {
+    "passed": 3,
+    "total": 3
+  },
+  "verification_breakdown_sum": 52,
+  "movie_temporal_regression": {
+    "passed": 2,
+    "total": 2
+  },
+  "numeric_value_reuse_regression": "pass",
+  "post_release_single_literal_role_fix": {
+    "exact_movie_queries_passed": 2,
+    "multi_table_runtime_passed": true,
+    "unseen_schema_passed": "4/4",
+    "heldout_semantic_passed": "6/6",
+    "composition_passed": "3/3",
+    "sensitive_legacy_comparison_and_limit_passed": "6/6",
+    "new_regression_test_passed": "1/1"
+  },
+  "packaging_verification_2026_09_10": {
+    "zero_shot_acceptance": {
+      "passed": 5,
+      "total": 5
+    },
+    "unseen_schema_fresh": {
+      "passed": 4,
+      "total": 4
+    },
+    "heldout_semantic_fresh": {
+      "passed": 6,
+      "total": 6
+    },
+    "where_order_limit_role_separation_fresh": {
+      "passed": 3,
+      "total": 3
+    },
+    "evaluation_entrypoint_tests": {
+      "passed": 5,
+      "total": 5
+    },
+    "fast_package_runtime_tests": {
+      "passed": 13,
+      "total": 13
+    },
+    "compileall": "pass",
+    "anti_hardcoding_audit": "pass",
+    "strict_model_load": "pass",
+    "strict_semantic_schema_encoder_v2_load": "pass",
+    "semantic_schema_encoder_v2_sha256": "f42c231655ba42e725b7f54bc458fb0da39e5cb7f83cbee6efeee58f3131cd24",
+    "legacy_full_rerun": "not_completed_in_single_command; prior verified baseline remains 21/21"
+  },
+  "role_separation_fix_2026_09_10": {
+    "movie_temporal_regression": "2/2",
+    "single_numeric_where_vs_limit": "pass",
+    "where_order_limit_composition": "3/3",
+    "zero_shot_acceptance": "5/5",
+    "unseen_schema": "4/4",
+    "heldout_semantic": "6/6",
+    "legacy_generation_fresh": "21/21",
+    "zero_shot_order_column_grounding": "3/3",
+    "fast_runtime_package_tests": "13/13",
+    "table_where_semantic_weight": 4.0,
+    "order_semantic_weight": 0.25,
+    "tiny_gpt_sha256": "edfebc0d701c3e4a3da76aca273709110d125bf08a0f65bc1ac2d8b4095e79c0",
+    "semantic_encoder_sha256": "f42c231655ba42e725b7f54bc458fb0da39e5cb7f83cbee6efeee58f3131cd24",
+    "known_limit": "unseen explicit ascending direction probe selected correct ORDER column but DESC direction"
+  },
+  "operator_scope_fix_2026_09_10": {
+    "movie_temporal_regression": "2/2",
+    "noisy_schema_operator_invariance": "1/1",
+    "where_order_limit_composition": "3/3",
+    "zero_shot_acceptance": "5/5",
+    "unseen_schema": "4/4",
+    "heldout_semantic": "6/6",
+    "legacy_generation_fresh": "21/21",
+    "fast_runtime_package_tests": "13/13",
+    "operator_context": "semantic_top_table_plus_question",
+    "table_where_semantic_weight": 4.0,
+    "order_semantic_weight": 0.25,
+    "tiny_gpt_sha256": "edfebc0d701c3e4a3da76aca273709110d125bf08a0f65bc1ac2d8b4095e79c0",
+    "semantic_encoder_sha256": "f42c231655ba42e725b7f54bc458fb0da39e5cb7f83cbee6efeee58f3131cd24",
+    "packaged_env": true
+  },
+  "simple_where_semantic_fix_2026_09_10": {
+    "noisy_movie_simple_where": "3/3",
+    "where_order_limit_composition": "3/3",
+    "zero_shot_acceptance": "5/5",
+    "unseen_schema": "4/4",
+    "heldout_semantic": "6/6",
+    "legacy_generation_fresh": "21/21",
+    "zero_shot_order_column_grounding": "3/3",
+    "fast_runtime_package_tests": "13/13",
+    "movie_operator_source_guards": "4/4",
+    "simple_where_semantic_source": "generic_v2_columns",
+    "composed_where_semantic_source": "role_specific_where_columns",
+    "order_structure_threshold_source": "learned_lexical_clause_probability",
+    "tiny_gpt_sha256": "edfebc0d701c3e4a3da76aca273709110d125bf08a0f65bc1ac2d8b4095e79c0",
+    "semantic_encoder_sha256": "f42c231655ba42e725b7f54bc458fb0da39e5cb7f83cbee6efeee58f3131cd24",
+    "packaged_env": true
+  },
+  "context_budget_fix_2026_09_10": {
+    "large_noisy_schema_podcast": "1/1",
+    "reproduced_full_prompt_tokens": 486,
+    "model_maximum_sequence_length": 512,
+    "generation_token_reserve": 96,
+    "prompt_budget": 416,
+    "compaction_policy": "full_schema_when_within_budget; otherwise exact_normalized_table_mention_then_v2_semantic_top_table",
+    "decoder_compacted_table_restriction": true,
+    "execution_validator_schema": "full_schema",
+    "movie_temporal_and_noisy_schema_completed": "6/6",
+    "where_order_limit_composition": "3/3",
+    "zero_shot_acceptance": "5/5",
+    "unseen_schema": "4/4",
+    "heldout_semantic": "6/6",
+    "legacy_generation_fresh": "21/21",
+    "fast_runtime_package_tests": "13/13",
+    "anti_hardcoding_audit": "pass",
+    "compileall": "pass",
+    "tiny_gpt_sha256": "edfebc0d701c3e4a3da76aca273709110d125bf08a0f65bc1ac2d8b4095e79c0",
+    "semantic_encoder_sha256": "f42c231655ba42e725b7f54bc458fb0da39e5cb7f83cbee6efeee58f3131cd24",
+    "packaged_env": true
+  }
+}

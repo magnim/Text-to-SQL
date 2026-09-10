@@ -18,3 +18,5 @@ env/
 
 # Pytest cache
 .pytest_cache/
+# Local credentials / database configuration
+.env

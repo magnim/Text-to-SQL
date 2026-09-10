@@ -1,0 +1,27 @@
+{
+  "seed": 42,
+  "source_examples": 2942,
+  "heldout_semantic_examples": 6,
+  "heldout_schema_names": [
+    "consultants",
+    "vehicles"
+  ],
+  "tokenizer": "tokenizer_balanced.json",
+  "initialization_checkpoint": "tiny_gpt_text_to_sql_with_in_v4.pt",
+  "final_checkpoint": "tiny_gpt_schema_aware_final.pt",
+  "training_strategy": [
+    "schema-conditioned auxiliary-head calibration over frozen legacy Transformer hidden states",
+    "balanced schema grounding calibration",
+    "legacy structure preservation calibration",
+    "projection pointer calibration",
+    "balanced clause calibration",
+    "semantic and lexical structure calibration",
+    "numeric WHERE/LIMIT role-pointer calibration"
+  ],
+  "sql_target_only_lm_loss_measurement": {
+    "sample_examples": 160,
+    "tokens": 3587,
+    "loss": 5.294198311378248
+  },
+  "backbone_fine_tuned": false
+}

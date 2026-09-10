@@ -1,0 +1,54 @@
+{
+  "history": [
+    {
+      "step": 50,
+      "loss": 3.233978509902954,
+      "retrieval_accuracy": 0.5
+    },
+    {
+      "step": 100,
+      "loss": 3.2026801109313965,
+      "retrieval_accuracy": 0.475
+    },
+    {
+      "step": 150,
+      "loss": 2.8843785524368286,
+      "retrieval_accuracy": 0.625
+    },
+    {
+      "step": 200,
+      "loss": 2.551116704940796,
+      "retrieval_accuracy": 0.6
+    },
+    {
+      "step": 250,
+      "loss": 2.4084166288375854,
+      "retrieval_accuracy": 0.675
+    },
+    {
+      "step": 300,
+      "loss": 2.484132766723633,
+      "retrieval_accuracy": 0.675
+    },
+    {
+      "step": 350,
+      "loss": 2.597559928894043,
+      "retrieval_accuracy": 0.625
+    },
+    {
+      "step": 400,
+      "loss": 2.0882068872451782,
+      "retrieval_accuracy": 0.825
+    },
+    {
+      "step": 450,
+      "loss": 2.0725361704826355,
+      "retrieval_accuracy": 0.825
+    },
+    {
+      "step": 500,
+      "loss": 1.917805016040802,
+      "retrieval_accuracy": 0.8
+    }
+  ]
+}

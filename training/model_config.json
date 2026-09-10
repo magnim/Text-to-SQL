@@ -1,0 +1,42 @@
+{
+  "architecture": "decoder_only_transformer",
+  "vocabulary_size": 1132,
+  "embedding_dimension": 64,
+  "maximum_sequence_length": 512,
+  "number_of_heads": 4,
+  "feed_forward_hidden_dimension": 128,
+  "number_of_layers": 4,
+  "schema_roles": {
+    "NORMAL": 0,
+    "TABLE": 1,
+    "COLUMN": 2,
+    "QUESTION": 3,
+    "SQL": 4
+  },
+  "number_of_schema_roles": 5,
+  "tied_lm_head": true,
+  "semantic_heads": [
+    "projection_head",
+    "projection_arity_head",
+    "clause_head",
+    "operator_head",
+    "direction_head",
+    "continuation_head",
+    "semantic_clause_head",
+    "semantic_continuation_head",
+    "lexical_clause_head",
+    "lexical_continuation_head",
+    "contextual_table_pointer",
+    "contextual_column_pointer",
+    "lexical_table_grounding",
+    "lexical_column_grounding",
+    "where_column_pointer",
+    "order_column_pointer",
+    "normalized_identifier_pointer",
+    "where_value_pointer",
+    "limit_value_pointer"
+  ],
+  "beam_width": 12,
+  "schema_conditioning": "complete current schema before question",
+  "decoder_constraints": "SQL grammar plus active-schema identifiers only"
+}

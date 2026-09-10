@@ -1,44 +1,16 @@
 class PromptBuilder:
+    @staticmethod
+    def build_inference_prompt(schema, question):
+        lines = ["Schema:"]
+        for table, columns in schema.items():
+            lines.append(f"Table {table}: {', '.join(columns)}.")
+        lines.extend(["", "Question:", question.strip(), "", "SQL:", ""])
+        return "\n".join(lines)
 
-    def build_inference_prompt(self,schema_text: str,question: str) -> str:
-        if not isinstance(schema_text, str):
-            raise TypeError("schema_text must be a string.")
-        if not schema_text.strip():
-            raise ValueError("schema_text cannot be empty.")
-        if not isinstance(question, str):
-            raise TypeError("question must be a string.")
-        if not question.strip():
-            raise ValueError("question cannot be empty.")
-        prompt = (
-            f"Schema:\n"
-            f"{schema_text}\n\n"
-            f"Question:\n"
-            f"{question.strip()}\n\n"
-            f"SQL:\n"
-        )
-        return prompt
+    @staticmethod
+    def build_training_prompt(schema, question, sql):
+        return PromptBuilder.build_inference_prompt(schema, question) + sql
 
-    def build_training_prompt(self,schema_text: str,question: str,sql: str) -> str:
-
-        if not isinstance(schema_text, str):
-            raise TypeError("schema_text must be a string.")
-        if not schema_text.strip():
-            raise ValueError("schema_text cannot be empty.")
-        if not isinstance(question, str):
-            raise TypeError("question must be a string.")
-        if not question.strip():
-            raise ValueError("question cannot be empty.")
-        if not isinstance(sql, str):
-            raise TypeError("sql must be a string.")
-        if not sql.strip():
-            raise ValueError("sql cannot be empty.")
-        prompt = (
-            f"Schema:\n"
-            f"{schema_text.strip()}\n\n"
-            f"Question:\n"
-            f"{question.strip()}\n\n"
-            f"SQL:\n"
-            f"{sql.strip()}"
-        )
-
-        return prompt
+    @staticmethod
+    def build_question_prompt(question):
+        return f"Question:\\n{question.strip()}\\n\\nSQL:\\n"

@@ -1,3 +1,6 @@
+import re
+import json
+
 class BPETrainer:
     """
     Trains a simple Byte Pair Encoding tokenizer.
@@ -10,10 +13,24 @@ class BPETrainer:
     """
 
     def __init__(self, words: list[str]):
-        self.words = words
+        self.words = []
+        for word in words:
+            for piece in self._pre_tokenize(word):
+                if piece != " ":
+                    self.words.append(piece)
         self.corpus = self._build_initial_corpus()
         self.merge_rules: list[tuple[str, str]] = []
         self.vocab: dict[str, int] = {}
+
+    def _pre_tokenize(self, text: str) -> list[str]:
+        pieces = re.findall(r"[A-Za-z_][A-Za-z0-9_]*|\d+(?:\.\d+)?|[^\w\s]|\s+", text)
+        normalized = []
+        for piece in pieces:
+            if piece.isspace():
+                normalized.append(" ")
+            else:
+                normalized.append(piece)
+        return normalized
 
     def _build_initial_corpus(self) -> dict[tuple[str, ...], int]:
         """
@@ -143,15 +160,16 @@ class BPETrainer:
         return new_tokens
 
     def encode(self, text: str) -> list[str]:
-        """
-        Encode new text using the learned BPE merge rules.
-        """
-        tokens = list(text)
-
-        for merge_rule in self.merge_rules:
-            tokens = self._merge_tokens(tokens, merge_rule)
-
-        return tokens
+        encoded_tokens = []
+        for piece in self._pre_tokenize(text):
+            if piece == " ":
+                encoded_tokens.append(" ")
+                continue
+            tokens = list(piece)
+            for merge_rule in self.merge_rules:
+                tokens = self._merge_tokens(tokens, merge_rule)
+            encoded_tokens.extend(tokens)
+        return encoded_tokens
 
     def _build_vocab(self) -> None:
         self.vocab["<PAD>"] = 0
@@ -174,7 +192,17 @@ class BPETrainer:
     def encode_ids(self, text: str) -> list[int]:
         """
         Encode text into vocabulary IDs.
+
+        A deterministic instance-local cache avoids recomputing the full BPE
+        merge sequence for repeated schema identifiers and SQL fragments.
         """
+        cache = getattr(self, "_encode_ids_cache", None)
+        if cache is None:
+            cache = {}
+            self._encode_ids_cache = cache
+        if text in cache:
+            return list(cache[text])
+
         tokens = self.encode(text)
         ids = []
         for token in tokens:
@@ -182,7 +210,8 @@ class BPETrainer:
                 ids.append(self.vocab[token])
             else:
                 ids.append(self.vocab["<UNK>"])
-        return ids
+        cache[text] = tuple(ids)
+        return list(ids)
 
     def decode_ids(self, token_ids: list[int]) -> str:
         id_to_token = {token_id: token for token, token_id in self.vocab.items()}
@@ -197,3 +226,31 @@ class BPETrainer:
                 continue
             decoded_tokens.append(token)
         return "".join(decoded_tokens)
+
+    def save(self, file_path: str) -> None:
+        data = {
+            "vocab": self.vocab,
+            "merge_rules": self.merge_rules,
+        }
+
+        with open(file_path, "w", encoding="utf-8") as file:
+            json.dump(data, file, ensure_ascii=False, indent=2)
+
+    @classmethod
+    def load(cls, file_path: str):
+        with open(file_path, "r", encoding="utf-8") as file:
+            data = json.load(file)
+
+        tokenizer = cls(words=[])
+
+        tokenizer.vocab = {
+            token: int(token_id)
+            for token, token_id in data["vocab"].items()
+        }
+
+        tokenizer.merge_rules = [
+            (left, right)
+            for left, right in data["merge_rules"]
+        ]
+
+        return tokenizer

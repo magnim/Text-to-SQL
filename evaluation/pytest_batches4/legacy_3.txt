@@ -1,0 +1,4 @@
+tests/test_option_a_regressions.py::test_option_a_real_model_regressions[give me 5 order records-SELECT * FROM orders LIMIT 5;]
+tests/test_option_a_regressions.py::test_option_a_real_model_regressions[show employee names and salaries-SELECT name, salary FROM employees;]
+tests/test_option_a_regressions.py::test_option_a_real_model_regressions[show product names and prices-SELECT name, price FROM products;]
+tests/test_option_a_regressions.py::test_option_a_real_model_regressions[show order quantities and statuses-SELECT quantity, status FROM orders;]

@@ -1,0 +1,4 @@
+tests/test_option_a_regressions.py::test_option_a_real_model_regressions[show employees where salary is greater than 60000-SELECT * FROM employees WHERE salary > 60000;]
+tests/test_option_a_regressions.py::test_option_a_real_model_regressions[retrieve the full product list-SELECT * FROM products;]
+tests/test_option_a_regressions.py::test_option_a_real_model_regressions[which order statuses occur-SELECT DISTINCT status FROM orders;]
+tests/test_option_a_regressions.py::test_option_a_real_model_regressions[rank employees from lowest salary to highest-SELECT * FROM employees ORDER BY salary ASC;]

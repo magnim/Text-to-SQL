@@ -1,0 +1,16 @@
+# Text-to-SQL project dependencies
+# Python 3.11+ recommended
+
+# Core model/runtime
+torch==2.10.0
+streamlit==1.63.0
+python-dotenv==1.2.2
+
+# MySQL backend (not required when DB_ENGINE=sqlite)
+PyMySQL==1.2.0
+
+# Training/data utilities
+datasets>=2.18.0
+
+# Test suite
+pytest==9.0.2

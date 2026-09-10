@@ -1,0 +1,60 @@
+{
+  "runs": [
+    {
+      "epoch": 1,
+      "examples": 2942,
+      "loss": 2.1497941223801926,
+      "clause_bit_accuracy": 0.8213233627917517,
+      "continuation_accuracy": 0.6866077498300476
+    },
+    {
+      "epoch": 2,
+      "examples": 2942,
+      "loss": 1.5100932202316482,
+      "clause_bit_accuracy": 0.8234760933605257,
+      "continuation_accuracy": 0.6872875594833446
+    },
+    {
+      "epoch": 3,
+      "examples": 2942,
+      "loss": 1.4141921906305932,
+      "clause_bit_accuracy": 0.8334466349422162,
+      "continuation_accuracy": 0.7144799456152278
+    },
+    {
+      "epoch": 4,
+      "examples": 2942,
+      "loss": 1.3698433567114545,
+      "clause_bit_accuracy": 0.8331067301155677,
+      "continuation_accuracy": 0.717199184228416
+    },
+    {
+      "epoch": 5,
+      "examples": 2942,
+      "loss": 1.3349154104107015,
+      "clause_bit_accuracy": 0.83877181055971,
+      "continuation_accuracy": 0.7284160435078179
+    },
+    {
+      "epoch": 6,
+      "examples": 2942,
+      "loss": 1.3118913774179164,
+      "clause_bit_accuracy": 0.8453433038749151,
+      "continuation_accuracy": 0.7437117607070021
+    },
+    {
+      "epoch": 7,
+      "examples": 2942,
+      "loss": 1.2914979853328599,
+      "clause_bit_accuracy": 0.8459098119193292,
+      "continuation_accuracy": 0.7413324269204623
+    },
+    {
+      "epoch": 8,
+      "examples": 2942,
+      "loss": 1.2697440898799313,
+      "clause_bit_accuracy": 0.8494221617946975,
+      "continuation_accuracy": 0.7426920462270564
+    }
+  ]
+}

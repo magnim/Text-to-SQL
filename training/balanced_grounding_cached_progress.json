@@ -1,0 +1,172 @@
+{
+  "runs": [
+    {
+      "epoch": 1,
+      "shard": 0,
+      "examples": 495,
+      "loss": 6.475624205849387,
+      "table_accuracy": 0.6141414141414141,
+      "where_accuracy": 0.46464646464646464,
+      "clause_bit_accuracy": 0.7663299663299663,
+      "continuation_accuracy": 0.5515151515151515,
+      "source_role_counts": {
+        "experience": 20,
+        "age": 23,
+        "price": 12,
+        "pay": 2,
+        "stock": 8,
+        "rating": 11,
+        "mileage": 1,
+        "amount": 15,
+        "quantity": 14
+      }
+    },
+    {
+      "epoch": 1,
+      "shard": 1,
+      "examples": 495,
+      "loss": 5.605180301088275,
+      "table_accuracy": 0.4707070707070707,
+      "where_accuracy": 0.47474747474747475,
+      "clause_bit_accuracy": 0.8962962962962963,
+      "continuation_accuracy": 0.9393939393939394,
+      "source_role_counts": {
+        "experience": 22,
+        "age": 18,
+        "price": 17,
+        "pay": 11,
+        "stock": 10,
+        "rating": 16,
+        "mileage": 4,
+        "amount": 15,
+        "quantity": 14
+      }
+    },
+    {
+      "epoch": 1,
+      "shard": 2,
+      "examples": 495,
+      "loss": 4.857580970995354,
+      "table_accuracy": 0.5070707070707071,
+      "where_accuracy": 0.5252525252525253,
+      "clause_bit_accuracy": 0.9784511784511785,
+      "continuation_accuracy": 0.98989898989899,
+      "source_role_counts": {
+        "experience": 19,
+        "age": 19,
+        "price": 14,
+        "pay": 14,
+        "stock": 9,
+        "rating": 12,
+        "mileage": 1,
+        "amount": 10,
+        "quantity": 10
+      }
+    },
+    {
+      "epoch": 1,
+      "shard": 3,
+      "examples": 440,
+      "loss": 5.006035687706687,
+      "table_accuracy": 0.5227272727272727,
+      "where_accuracy": 0.42727272727272725,
+      "clause_bit_accuracy": 0.9954545454545455,
+      "continuation_accuracy": 1.0,
+      "source_role_counts": {
+        "experience": 19,
+        "age": 24,
+        "price": 16,
+        "pay": 10,
+        "stock": 7,
+        "rating": 7,
+        "mileage": 0,
+        "amount": 15,
+        "quantity": 10
+      }
+    },
+    {
+      "epoch": 1,
+      "shard": 4,
+      "examples": 495,
+      "loss": 4.493880799322417,
+      "table_accuracy": 0.5070707070707071,
+      "where_accuracy": 0.5171717171717172,
+      "clause_bit_accuracy": 1.0,
+      "continuation_accuracy": 1.0,
+      "source_role_counts": {
+        "experience": 24,
+        "age": 13,
+        "price": 14,
+        "pay": 17,
+        "stock": 18,
+        "rating": 12,
+        "mileage": 2,
+        "amount": 14,
+        "quantity": 7
+      }
+    },
+    {
+      "epoch": 1,
+      "shard": 5,
+      "examples": 495,
+      "loss": 4.354739645755652,
+      "table_accuracy": 0.5333333333333333,
+      "where_accuracy": 0.5373737373737374,
+      "clause_bit_accuracy": 1.0,
+      "continuation_accuracy": 1.0,
+      "source_role_counts": {
+        "experience": 18,
+        "age": 21,
+        "price": 21,
+        "pay": 14,
+        "stock": 11,
+        "rating": 6,
+        "mileage": 2,
+        "amount": 10,
+        "quantity": 12
+      }
+    },
+    {
+      "epoch": 1,
+      "shard": 6,
+      "examples": 495,
+      "loss": 4.475634514201771,
+      "table_accuracy": 0.6101010101010101,
+      "where_accuracy": 0.5151515151515151,
+      "clause_bit_accuracy": 1.0,
+      "continuation_accuracy": 1.0,
+      "source_role_counts": {
+        "experience": 19,
+        "age": 27,
+        "price": 12,
+        "pay": 15,
+        "stock": 13,
+        "rating": 18,
+        "mileage": 1,
+        "amount": 11,
+        "quantity": 14
+      }
+    },
+    {
+      "epoch": 1,
+      "shard": 7,
+      "examples": 495,
+      "loss": 4.343578144998261,
+      "table_accuracy": 0.5676767676767677,
+      "where_accuracy": 0.5232323232323233,
+      "clause_bit_accuracy": 1.0,
+      "continuation_accuracy": 1.0,
+      "source_role_counts": {
+        "experience": 19,
+        "age": 15,
+        "price": 22,
+        "pay": 13,
+        "stock": 8,
+        "rating": 14,
+        "mileage": 1,
+        "amount": 6,
+        "quantity": 15
+      }
+    }
+  ]
+}

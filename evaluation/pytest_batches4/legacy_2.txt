@@ -1,0 +1,4 @@
+tests/test_option_a_regressions.py::test_option_a_real_model_regressions[find employees under 30 years old-SELECT * FROM employees WHERE age < 30;]
+tests/test_option_a_regressions.py::test_option_a_real_model_regressions[orders containing more than 2 items-SELECT * FROM orders WHERE quantity > 2;]
+tests/test_option_a_regressions.py::test_option_a_real_model_regressions[return only 5 employees-SELECT * FROM employees LIMIT 5;]
+tests/test_option_a_regressions.py::test_option_a_real_model_regressions[retrieve 5 product records-SELECT * FROM products LIMIT 5;]

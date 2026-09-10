@@ -1,0 +1,4 @@
+tests/test_option_a_regressions.py::test_option_a_real_model_regressions[arrange orders from smallest quantity to largest-SELECT * FROM orders ORDER BY quantity ASC;]
+tests/test_option_a_regressions.py::test_option_a_real_model_regressions[arrange products from most expensive to cheapest-SELECT * FROM products ORDER BY price DESC;]
+tests/test_option_a_regressions.py::test_option_a_real_model_regressions[arrange orders from largest quantity to smallest-SELECT * FROM orders ORDER BY quantity DESC;]
+tests/test_option_a_regressions.py::test_option_a_real_model_regressions[employees aged exactly 30-SELECT * FROM employees WHERE age = 30;]
